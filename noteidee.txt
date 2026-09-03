@@ -1,0 +1,53 @@
+=====================================================
+💡 CARNET D'IDÉES & NOUVELLES FONCTIONNALITÉS - DIT-PAULO ?
+=====================================================
+
+--- 1. GAMIFICATION & DYNAMIQUE DE JEU ---
+
+🎲 Roue du Hasard / Roulette des Joueurs :
+   - Remplacer le tour par tour automatique par une roulette animée qui désigne au hasard le joueur interrogé à chaque question.
+
+✅ [FAIT] ⭐ Système de Points & Validation du Groupe :
+   - Après chaque réponse, le groupe choisit si la réponse a été satisfaisante ("Validé 👍") ou "Langue de bois 👎".
+   - Cumul de points pour chaque réponse validée (+10 Pts, +25 Pts pour Extrême) et affichage du solde des joueurs.
+
+✅ [FAIT] 💣 Cartes Extrêmes Surprise & Joker de Pass (Achat avec Points) :
+   - De manière aléatoire, une carte "Extrême" apparaît durant la partie.
+   - Possibilité de passer la carte difficile en dépensant 15 Pts accumulés grâce au bouton "🎟️ Joker (-15 Pts)".
+
+
+--- 2. PERSONNALISATION & PRÉNOMS DES JOUEURS ---
+
+✅ [FAIT] 🎯 Questions avec Prénoms Dynamiques :
+   - Insérer automatiquement les prénoms des joueurs de la partie au cœur du texte des questions (ex: "Est-ce que tu penses que {Joueur1} cacherait un corps pour {Joueur2} ?").
+
+✅ [FAIT] 🔥 Cartes "Extrême Potin" :
+   - Nouvelle catégorie / cartes choc axées sur les anecdotes croustillantes, les potins de soirée et les vérités piquantes. (545 questions en base !)
+
+🎨 Créateur de Deck Personnalisé (Inside Jokes) :
+   - Permettre aux joueurs d'ajouter leurs propres questions d'amis ou blagues privées directement dans l'application.
+
+
+--- 3. INTERACTION & COMPÉTITION DE GROUPE ---
+
+✅ [FAIT] 🏆 Mode "Vote du Groupe" (Podium interactif) :
+   - Affichage du classement et du podium des scores de fin de partie avec médailles (🥇, 🥈, 🥉).
+
+⏱️ Timer "Patate Chaude" (Mode Pression 15s) :
+   - Un décompte visuel de 15 secondes avec son de tic-tac. Si le joueur hésite trop longtemps, un gage lui est attribué !
+
+
+--- 4. IMMERSION & PARTAGE ---
+
+📸 Générateur de Carte pour Story (Insta / TikTok / Snap) :
+   - Un bouton permettant de créer un visuel HD stylé de la carte pour la partager directement sur les réseaux sociaux.
+
+🔊 Design Sonore & Effets Sonores (SFX) :
+   - Ajout de bruitages immersifs (bruit de carte distribuée, flip 3D, confettis, son de Game Over).
+
+
+--- 5. PHASE FINALE & DISTRIBUTION ---
+
+✅ [FAIT] 📦 Déploiement & Accessibilité :
+   - Fichier de build APK Android configuré (com.ditpaulo.game, versionCode: 1, logo officiel).
+   - Pipeline automatisé GitHub Actions (.github/workflows/build-apk.yml) publiant directement sur GitHub Releases sans passer par les stores.

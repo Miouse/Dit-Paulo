@@ -1,0 +1,79 @@
+name: Build & Release Android APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 🔨 Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Cloner le dépôt
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurer Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🟢 Configurer Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 🤖 Configurer Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 📦 Installer les dépendances
+        run: npm ci
+
+      - name: ⚙️ Générer le projet natif Android (Expo Prebuild)
+        run: npx expo prebuild --platform android --clean
+
+      - name: 🔨 Compiler l'APK avec Gradle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: 🏷️ Préparer le fichier APK
+        run: |
+          mkdir -p dist
+          # Copie de l'APK produit vers le dossier dist
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk dist/Dit-Paulo.apk
+          elif [ -f android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release-unsigned.apk dist/Dit-Paulo.apk
+          else
+            echo "Erreur: Fichier APK introuvable !"
+            find android/app/build/outputs/ -name "*.apk"
+            exit 1
+          fi
+
+      - name: 📤 Sauvegarder l'artefact de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dit-Paulo-APK
+          path: dist/Dit-Paulo.apk
+
+      - name: 🚀 Publier sur GitHub Releases
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          name: Release ${{ github.ref_name || 'v1.0.0' }}
+          tag_name: ${{ github.ref_name || 'v1.0.0' }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: dist/Dit-Paulo.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
