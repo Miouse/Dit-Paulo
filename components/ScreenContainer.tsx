@@ -46,11 +46,11 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   imageStyle: {
-    opacity: 0.85,
+    opacity: 0.55,
   },
   darkOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(13, 13, 18, 0.68)',
+    backgroundColor: 'rgba(11, 11, 15, 0.86)',
   },
   container: {
     flex: 1,
