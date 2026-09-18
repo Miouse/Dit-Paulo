@@ -127,6 +127,19 @@ export default function HomeScreen() {
           accessibilityLabel="Explorer toutes les cartes du jeu en grille"
         />
 
+        {/* Bouton Mes Cartes Personnalisées */}
+        <PrimaryButton
+          label="⭐  Mes Cartes Personnalisées"
+          onPress={() => router.push('/custom-cards')}
+          variant="secondary"
+          style={{
+            ...styles.mainButton,
+            borderColor: colors.accent,
+            backgroundColor: colors.accentMuted,
+          }}
+          accessibilityLabel="Créer et gérer mes cartes personnalisées"
+        />
+
         {/* Bouton Mode Tri Tinder (Temporaire) */}
         <PrimaryButton
           label={

@@ -44,7 +44,19 @@ export const colors = {
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
-} as const;
+};
+
+export function applyThemeColors(accentColors: {
+  accent: string;
+  accentLight: string;
+  accentDark: string;
+  accentMuted: string;
+}) {
+  colors.accent = accentColors.accent;
+  colors.accentLight = accentColors.accentLight;
+  colors.accentDark = accentColors.accentDark;
+  colors.accentMuted = accentColors.accentMuted;
+}
 
 export const typography = {
   // Tailles de police

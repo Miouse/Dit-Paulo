@@ -13,15 +13,19 @@ import {
   View,
 } from 'react-native';
 import { ScreenContainer } from '../components/ScreenContainer';
-import { colors, radii, spacing, typography } from '../constants/theme';
+import { colors, radii, shadows, spacing, typography } from '../constants/theme';
 import { useGame } from '../context/GameContext';
+import { useTheme } from '../context/ThemeContext';
 import { questions } from '../data/questions';
+import { customCardsService } from '../services/customCardsService';
 import { jokeEngine, type JokeEffect } from '../services/jokeEngine';
 import { tinderSortService } from '../services/tinderSortService';
 
 export default function SettingsScreen() {
+  const { theme, setTheme, availableThemes } = useTheme();
   const { state, resetSession, resetSeenQuestions } = useGame();
   const [resetFeedback, setResetFeedback] = useState(false);
+  const [customCardsCount, setCustomCardsCount] = useState(0);
 
   const [jokesEnabled, setJokesEnabled] = useState(true);
   const [jokesList, setJokesList] = useState<JokeEffect[]>([]);
@@ -40,10 +44,15 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     loadSettings();
-    const unsub = tinderSortService.subscribe((s) => {
+    const unsubTinder = tinderSortService.subscribe((s) => {
       setTinderStats({ kept: s.keptIds.length, rejected: s.rejectedIds.length });
     });
-    return () => unsub();
+    customCardsService.getCustomCards().then((c) => setCustomCardsCount(c.length));
+    const unsubCards = customCardsService.subscribe((c) => setCustomCardsCount(c.length));
+    return () => {
+      unsubTinder();
+      unsubCards();
+    };
   }, []);
 
   const loadSettings = async () => {
@@ -54,6 +63,8 @@ export default function SettingsScreen() {
 
     const sortState = await tinderSortService.getSortState();
     setTinderStats({ kept: sortState.keptIds.length, rejected: sortState.rejectedIds.length });
+    const customCards = await customCardsService.getCustomCards();
+    setCustomCardsCount(customCards.length);
   };
 
   const handleToggleJokes = async (val: boolean) => {
@@ -108,6 +119,96 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.content}>
+          {/* Section Thèmes Visuels de l'Application */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>THÈME VISUEL DE L'APPLICATION 🎨</Text>
+            <View style={styles.card}>
+              <View style={styles.themeHeaderRow}>
+                <Text style={styles.labelBold}>Ambiance active :</Text>
+                <View style={[styles.activeThemeBadge, { borderColor: theme.colors.accent, backgroundColor: theme.colors.accentMuted }]}>
+                  <Text style={[styles.activeThemeBadgeText, { color: theme.colors.accentLight }]}>
+                    {theme.emoji} {theme.name}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.sublabel}>
+                Sélectionne une palette pour personnaliser l'ensemble de l'interface et des cartes :
+              </Text>
+
+              <View style={styles.themesGrid}>
+                {availableThemes.map((item) => {
+                  const isCurrent = theme.id === item.id;
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => setTheme(item.id)}
+                      style={[
+                        styles.themeItemCard,
+                        isCurrent && {
+                          borderColor: item.colors.accent,
+                          backgroundColor: item.colors.accentMuted,
+                        },
+                      ]}
+                    >
+                      <View style={[styles.themeColorCircle, { backgroundColor: item.previewColor }]} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.themeItemName, isCurrent && { color: item.colors.accentLight, fontWeight: '700' }]}>
+                          {item.emoji} {item.name}
+                        </Text>
+                        <Text style={styles.themeItemDesc} numberOfLines={1}>
+                          {item.description}
+                        </Text>
+                      </View>
+                      {isCurrent && <Text style={{ color: item.colors.accentLight, fontSize: 16 }}>✓</Text>}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </View>
+
+          {/* Section Cartes Personnalisées */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>MES CARTES PERSONNELLES ⭐</Text>
+            <View style={styles.card}>
+              <View style={styles.rowBetween}>
+                <View style={styles.rowLabelGroup}>
+                  <Text style={styles.labelBold}>Cartes créées par toi</Text>
+                  <Text style={styles.sublabel}>
+                    {customCardsCount} carte{customCardsCount > 1 ? 's' : ''} personnalisée{customCardsCount > 1 ? 's' : ''} active{customCardsCount > 1 ? 's' : ''} dans la pioche
+                  </Text>
+                </View>
+                <View style={[styles.activeThemeBadge, { borderColor: theme.colors.accent, backgroundColor: theme.colors.accentMuted }]}>
+                  <Text style={[styles.activeThemeBadgeText, { color: theme.colors.accentLight }]}>
+                    ⭐ {customCardsCount}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => router.push('/custom-cards')}
+              style={[styles.primaryActionCard, { borderColor: theme.colors.accent, backgroundColor: theme.colors.accentMuted }]}
+            >
+              <Text style={[styles.primaryActionText, { color: theme.colors.accentLight }]}>
+                ✨ Gérer & Créer mes Cartes Personnalisées
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Section Thèmes & Catégories de Jeu */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>THÈMES & AMBIANCES DE JEU 🎭</Text>
+            <TouchableOpacity
+              onPress={() => router.push('/setup/categories')}
+              style={[styles.primaryActionCard, { borderColor: colors.surfaceBorder, backgroundColor: colors.surfaceElevated }]}
+            >
+              <Text style={[styles.primaryActionText, { color: colors.textPrimary }]}>
+                🎯 Choisir les Catégories de questions ({state.selectedCategories.length} actives)
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Section Codes Blagues */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>CODES BLAGUES & EASTER EGGS 🎭</Text>
@@ -493,4 +594,66 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.semibold,
     color: colors.danger,
   },
+  themeHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  activeThemeBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radii.full,
+    borderWidth: 1,
+  },
+  activeThemeBadgeText: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+  },
+  themesGrid: {
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  themeItemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    borderWidth: 1.5,
+    borderColor: colors.surfaceBorder,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  themeColorCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  themeItemName: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.textPrimary,
+  },
+  themeItemDesc: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 1,
+  },
+  primaryActionCard: {
+    borderRadius: radii.xl,
+    borderWidth: 1.5,
+    padding: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.sm,
+  },
+  primaryActionText: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    textAlign: 'center',
+  },
 });
+

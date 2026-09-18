@@ -31,16 +31,19 @@ export default function CardsGalleryScreen() {
   }, [windowWidth]);
 
   // Filtres
-  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | 'all' | 'custom'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const allCategories = Object.keys(CATEGORY_CONFIGS) as QuestionCategory[];
+  const customCardsCount = useMemo(() => questions.filter((q) => q.isCustom).length, []);
 
   // Cartes filtrées
   const filteredQuestions = useMemo(() => {
     return questions.filter((q) => {
-      // Filtre catégorie
-      if (selectedCategory !== 'all' && q.category !== selectedCategory) {
+      // Filtre catégorie ou personnalisée
+      if (selectedCategory === 'custom') {
+        if (!q.isCustom) return false;
+      } else if (selectedCategory !== 'all' && q.category !== selectedCategory) {
         return false;
       }
       // Filtre recherche textuelle
@@ -60,7 +63,7 @@ export default function CardsGalleryScreen() {
 
     return (
       <View style={[styles.cardContainer, { width: `${100 / numColumns}%` as any }]}>
-        <View style={[styles.miniCard, { borderColor: catConfig.color }]}>
+        <View style={[styles.miniCard, { borderColor: item.isCustom ? '#FFD700' : catConfig.color }]}>
           {/* Motifs filigranes */}
           <Text style={[styles.cornerMotif, styles.topLeft]}>♠ ♥</Text>
           <Text style={[styles.cornerMotif, styles.topRight]}>♦ ♣</Text>
@@ -72,6 +75,11 @@ export default function CardsGalleryScreen() {
                 {catConfig.emoji} {catConfig.label}
               </Text>
             </View>
+            {item.isCustom && (
+              <View style={[styles.categoryBadge, { borderColor: '#FFD700', backgroundColor: 'rgba(255, 215, 0, 0.18)' }]}>
+                <Text style={[styles.categoryBadgeText, { color: '#FFD700' }]}>⭐ Perso</Text>
+              </View>
+            )}
             <Text style={styles.idBadge}>#{item.id}</Text>
           </View>
 
@@ -114,9 +122,17 @@ export default function CardsGalleryScreen() {
                 <Text style={styles.backText}>← Retour</Text>
               </TouchableOpacity>
 
-              <Text style={styles.countBadge}>
-                {filteredQuestions.length} / {questions.length} cartes
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                <TouchableOpacity
+                  onPress={() => router.push('/custom-cards')}
+                  style={[styles.backButton, { backgroundColor: 'rgba(255, 215, 0, 0.15)', borderColor: '#FFD700' }]}
+                >
+                  <Text style={[styles.backText, { color: '#FFD700' }]}>＋ Créer</Text>
+                </TouchableOpacity>
+                <Text style={styles.countBadge}>
+                  {filteredQuestions.length} / {questions.length} cartes
+                </Text>
+              </View>
             </View>
 
             <Text style={styles.title}>Galerie des Cartes 🃏</Text>
@@ -151,6 +167,29 @@ export default function CardsGalleryScreen() {
                   Toutes ({questions.length})
                 </Text>
               </TouchableOpacity>
+
+              {/* Filtre Cartes Personnalisées */}
+              {customCardsCount > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSelectedCategory('custom')}
+                  style={[
+                    styles.filterChip,
+                    selectedCategory === 'custom' && {
+                      borderColor: '#FFD700',
+                      backgroundColor: 'rgba(255, 215, 0, 0.18)',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      selectedCategory === 'custom' && { color: '#FFD700', fontWeight: '700' },
+                    ]}
+                  >
+                    ⭐ Mes Cartes ({customCardsCount})
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               {allCategories.map((catId) => {
                 const config = CATEGORY_CONFIGS[catId];

@@ -140,6 +140,7 @@ export interface Question {
   category: QuestionCategory;
   minPlayers: number;
   maxPlayers?: number;
+  isCustom?: boolean;
   // Champs optionnels dépréciés
   modes?: string[];
   intensity?: number;
