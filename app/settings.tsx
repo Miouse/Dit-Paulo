@@ -17,6 +17,7 @@ import { colors, radii, spacing, typography } from '../constants/theme';
 import { useGame } from '../context/GameContext';
 import { questions } from '../data/questions';
 import { jokeEngine, type JokeEffect } from '../services/jokeEngine';
+import { tinderSortService } from '../services/tinderSortService';
 
 export default function SettingsScreen() {
   const { state, resetSession, resetSeenQuestions } = useGame();
@@ -25,6 +26,10 @@ export default function SettingsScreen() {
   const [jokesEnabled, setJokesEnabled] = useState(true);
   const [jokesList, setJokesList] = useState<JokeEffect[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // État Tri Tinder
+  const [tinderStats, setTinderStats] = useState({ kept: 0, rejected: 0 });
+  const [tinderFeedback, setTinderFeedback] = useState<string | null>(null);
 
   // Formulaire nouvelle blague
   const [newTriggerName, setNewTriggerName] = useState('');
@@ -35,6 +40,10 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     loadSettings();
+    const unsub = tinderSortService.subscribe((s) => {
+      setTinderStats({ kept: s.keptIds.length, rejected: s.rejectedIds.length });
+    });
+    return () => unsub();
   }, []);
 
   const loadSettings = async () => {
@@ -42,6 +51,9 @@ export default function SettingsScreen() {
     setJokesEnabled(enabled);
     const list = await jokeEngine.getAllJokes();
     setJokesList(list);
+
+    const sortState = await tinderSortService.getSortState();
+    setTinderStats({ kept: sortState.keptIds.length, rejected: sortState.rejectedIds.length });
   };
 
   const handleToggleJokes = async (val: boolean) => {
@@ -194,6 +206,50 @@ export default function SettingsScreen() {
                   </View>
                 ))}
               </View>
+            )}
+          </View>
+
+          {/* Section Tri Tinder & Cartes Exclues */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>TRI TINDER & CARTES EXCLUES 🔥</Text>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <Text style={styles.label}>Cartes exclues du jeu</Text>
+                <Text style={[styles.value, { color: tinderStats.rejected > 0 ? colors.danger : colors.textPrimary, fontWeight: '700' }]}>
+                  {tinderStats.rejected} / {questions.length}
+                </Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.row}>
+                <Text style={styles.label}>Cartes validées (gardées)</Text>
+                <Text style={[styles.value, { color: colors.success, fontWeight: '700' }]}>
+                  {tinderStats.kept}
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => router.push('/tinder-sort')}
+              style={[styles.dangerCard, { marginBottom: spacing.sm, borderColor: '#FF2D55', backgroundColor: 'rgba(255, 45, 85, 0.1)' }]}
+            >
+              <Text style={[styles.dangerText, { color: '#FF2D55' }]}>
+                🔥 Ouvrir le Tri des Cartes (Mode Tinder)
+              </Text>
+            </TouchableOpacity>
+
+            {tinderStats.rejected > 0 && (
+              <TouchableOpacity
+                onPress={async () => {
+                  await tinderSortService.resetSortState();
+                  setTinderFeedback('✅ Toutes les cartes exclues ont été réintégrées !');
+                  setTimeout(() => setTinderFeedback(null), 3000);
+                }}
+                style={[styles.dangerCard, { borderColor: colors.surfaceBorder }]}
+              >
+                <Text style={[styles.dangerText, { color: colors.textSecondary }]}>
+                  {tinderFeedback ?? '🔄 Réintégrer toutes les cartes exclues au jeu'}
+                </Text>
+              </TouchableOpacity>
             )}
           </View>
 

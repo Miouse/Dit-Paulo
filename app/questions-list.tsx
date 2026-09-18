@@ -17,37 +17,10 @@ import {
 } from 'react-native';
 import { colors, radii, spacing, typography } from '../constants/theme';
 import { questions } from '../data/questions';
-import { INTENSITY_CONFIGS, MODE_CONFIGS, type GameMode, type IntensityLevel } from '../types/game';
-import type { QuestionCategory } from '../types/question';
+import { CATEGORY_CONFIGS, type QuestionCategory } from '../types/question';
 
 // Hauteur du header fixe (titre + retour)
 const HEADER_HEIGHT = 72;
-
-// ─── Labels & meta par catégorie ──────────────────────────────────────────────
-const CATEGORY_META: Record<QuestionCategory, { label: string; emoji: string; color: string }> = {
-  fun:           { label: 'Fun',           emoji: '🥳', color: '#FF8C42' },
-  future:        { label: 'Avenir',        emoji: '🔮', color: '#AF52DE' },
-  personality:   { label: 'Personnalité',  emoji: '👤', color: '#30D158' },
-  relationships: { label: 'Relations',     emoji: '🤝', color: '#FF6B9D' },
-  hypothetical:  { label: 'Dilemme',       emoji: '🌀', color: '#64D2FF' },
-  debate:        { label: 'Débat',         emoji: '⚖️',  color: '#FFD60A' },
-  memories:      { label: 'Souvenirs',     emoji: '📜', color: '#FF9F0A' },
-  dreams:        { label: 'Rêves',         emoji: '🌟', color: '#BF5AF2' },
-  flirt:         { label: 'Flirt',         emoji: '😏', color: '#FF2D55' },
-  lifestyle:     { label: 'Mode de vie',   emoji: '🌿', color: '#34C759' },
-  gossip:        { label: 'Potin Extrême', emoji: '🔥', color: '#FF3B30' },
-  philosophy:    { label: 'Philosophie',   emoji: '🧠', color: '#7B61FF' },
-  hot:           { label: 'Hot',           emoji: '🌶️', color: '#FF2D55' },
-};
-
-const INTENSITY_COLORS: Record<number, string> = {
-  1: '#48cae4',
-  2: '#90be6d',
-  3: '#f9c74f',
-  4: '#f8961e',
-  5: '#f3722c',
-  6: '#FFD700',
-};
 
 // ─── Ordre des catégories ──────────────────────────────────────────────────────
 const CATEGORY_ORDER: QuestionCategory[] = [
@@ -60,47 +33,28 @@ type QuestionRowProps = {
   index: number;
   id: string;
   text: string;
-  intensity: number;
-  modes: string[];
+  category: QuestionCategory;
 };
 
-const QuestionRow = React.memo(({ index, id, text, intensity, modes }: QuestionRowProps) => {
-  const intensityColor = INTENSITY_COLORS[intensity] ?? '#888';
-  const isGold = intensity === 6;
+const QuestionRow = React.memo(({ index, id, text, category }: QuestionRowProps) => {
+  const meta = CATEGORY_CONFIGS[category] ?? { label: category, emoji: '💬', color: colors.accent };
 
   return (
-    <View style={[styles.row, isGold && styles.rowGold]}>
+    <View style={styles.row}>
       {/* Numéro */}
       <Text style={styles.rowIndex}>{index}</Text>
 
-      {/* Badge intensité */}
-      <View style={[styles.intensityBadge, { backgroundColor: intensityColor + '22', borderColor: intensityColor + '55' }]}>
-        <Text style={[styles.intensityText, { color: intensityColor }]}>
-          {INTENSITY_CONFIGS[intensity as IntensityLevel]?.emoji ?? '?'} {intensity}
+      {/* Badge Catégorie */}
+      <View style={[styles.categoryBadge, { backgroundColor: meta.badgeBg || meta.color + '22', borderColor: meta.color + '55' }]}>
+        <Text style={[styles.categoryBadgeText, { color: meta.color }]}>
+          {meta.emoji} {meta.label}
         </Text>
       </View>
 
       {/* Texte question */}
-      <Text style={[styles.questionText, isGold && styles.questionTextGold]} numberOfLines={3}>
+      <Text style={styles.questionText} numberOfLines={3}>
         {text}
       </Text>
-
-      {/* Modes */}
-      <View style={styles.modesRow}>
-        {modes.slice(0, 3).map((m) => {
-          const modeColor = (colors.modes as Record<string, { primary: string }>)[m]?.primary ?? '#888';
-          return (
-            <View key={m} style={[styles.modePill, { backgroundColor: modeColor + '22' }]}>
-              <Text style={[styles.modePillText, { color: modeColor }]}>
-                {MODE_CONFIGS[m as GameMode]?.emoji ?? m}
-              </Text>
-            </View>
-          );
-        })}
-        {modes.length > 3 && (
-          <Text style={styles.moreModesText}>+{modes.length - 3}</Text>
-        )}
-      </View>
 
       {/* ID */}
       <Text style={styles.idText}>{id}</Text>
@@ -117,7 +71,8 @@ type SectionHeaderProps = {
 };
 
 const SectionHeader = ({ category, count, isCollapsed, onToggle }: SectionHeaderProps) => {
-  const meta = CATEGORY_META[category] ?? { label: category, emoji: '💬', color: colors.accent };
+  const meta = CATEGORY_CONFIGS[category] ?? { label: category, emoji: '💬', color: colors.accent };
+
   return (
     <TouchableOpacity
       style={[styles.sectionHeader, { borderLeftColor: meta.color }]}
@@ -137,8 +92,7 @@ const SectionHeader = ({ category, count, isCollapsed, onToggle }: SectionHeader
 // ─── Écran principal ───────────────────────────────────────────────────────────
 export default function QuestionsListScreen() {
   const [search, setSearch] = useState('');
-  const [selectedMode, setSelectedMode] = useState<GameMode | 'all'>('all');
-  const [selectedIntensity, setSelectedIntensity] = useState<IntensityLevel | 'all'>('all');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<QuestionCategory | 'all'>('all');
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   // ── Hide-on-scroll ──
@@ -182,18 +136,17 @@ export default function QuestionsListScreen() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return questions.filter((item) => {
-      if (selectedMode !== 'all' && !item.modes.includes(selectedMode)) return false;
-      if (selectedIntensity !== 'all' && item.intensity !== selectedIntensity) return false;
+      if (selectedCategoryFilter !== 'all' && item.category !== selectedCategoryFilter) return false;
       if (q.length > 0) {
         const match =
           item.text.toLowerCase().includes(q) ||
           item.id.toLowerCase().includes(q) ||
-          CATEGORY_META[item.category]?.label.toLowerCase().includes(q);
+          CATEGORY_CONFIGS[item.category]?.label.toLowerCase().includes(q);
         if (!match) return false;
       }
       return true;
     });
-  }, [search, selectedMode, selectedIntensity]);
+  }, [search, selectedCategoryFilter]);
 
   // ── Groupement par catégorie ──
   const sections = useMemo(() => {
@@ -206,7 +159,7 @@ export default function QuestionsListScreen() {
     return CATEGORY_ORDER
       .filter((cat) => groups[cat]?.length > 0)
       .map((cat) => ({
-        category: cat as QuestionCategory,
+        category: cat,
         data: collapsed[cat] ? [] : (groups[cat] ?? []),
         totalCount: groups[cat]?.length ?? 0,
       }));
@@ -222,7 +175,7 @@ export default function QuestionsListScreen() {
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
           style={styles.searchInput}
-          placeholder="Rechercher une question..."
+          placeholder="Rechercher une question ou catégorie..."
           placeholderTextColor={colors.textTertiary}
           value={search}
           onChangeText={setSearch}
@@ -230,68 +183,33 @@ export default function QuestionsListScreen() {
         />
       </View>
 
-      {/* Filtres mode */}
+      {/* Filtres Catégories */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filterScroll}
       >
         <TouchableOpacity
-          style={[styles.filterChip, selectedMode === 'all' && styles.filterChipActive]}
-          onPress={() => setSelectedMode('all')}
+          style={[styles.filterChip, selectedCategoryFilter === 'all' && styles.filterChipActive]}
+          onPress={() => setSelectedCategoryFilter('all')}
         >
-          <Text style={[styles.filterChipText, selectedMode === 'all' && styles.filterChipTextActive]}>
-            Tous les modes
+          <Text style={[styles.filterChipText, selectedCategoryFilter === 'all' && styles.filterChipTextActive]}>
+            Toutes ({questions.length})
           </Text>
         </TouchableOpacity>
-        {Object.values(MODE_CONFIGS).map((m) => {
-          const mColor = (colors.modes as Record<string, { primary: string }>)[m.id]?.primary ?? '#888';
-          const active = selectedMode === m.id;
+        {CATEGORY_ORDER.map((cat) => {
+          const cfg = CATEGORY_CONFIGS[cat];
+          const active = selectedCategoryFilter === cat;
           return (
             <TouchableOpacity
-              key={m.id}
+              key={cat}
               style={[
                 styles.filterChip,
-                active && { borderColor: mColor, backgroundColor: mColor + '22' },
+                active && { borderColor: cfg.color, backgroundColor: cfg.color + '22' },
               ]}
-              onPress={() => setSelectedMode(active ? 'all' : m.id)}
+              onPress={() => setSelectedCategoryFilter(active ? 'all' : cat)}
             >
-              <Text style={[styles.filterChipText, active && { color: mColor }]}>
-                {m.emoji} {m.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-
-      {/* Filtres intensité */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterScroll}
-      >
-        <TouchableOpacity
-          style={[styles.filterChip, selectedIntensity === 'all' && styles.filterChipActive]}
-          onPress={() => setSelectedIntensity('all')}
-        >
-          <Text style={[styles.filterChipText, selectedIntensity === 'all' && styles.filterChipTextActive]}>
-            Toutes intensités
-          </Text>
-        </TouchableOpacity>
-        {([1, 2, 3, 4, 5, 6] as IntensityLevel[]).map((lvl) => {
-          const cfg = INTENSITY_CONFIGS[lvl];
-          const iColor = INTENSITY_COLORS[lvl];
-          const active = selectedIntensity === lvl;
-          return (
-            <TouchableOpacity
-              key={lvl}
-              style={[
-                styles.filterChip,
-                active && { borderColor: iColor, backgroundColor: iColor + '22' },
-              ]}
-              onPress={() => setSelectedIntensity(active ? 'all' : lvl)}
-            >
-              <Text style={[styles.filterChipText, active && { color: iColor }]}>
+              <Text style={[styles.filterChipText, active && { color: cfg.color }]}>
                 {cfg.emoji} {cfg.label}
               </Text>
             </TouchableOpacity>
@@ -323,8 +241,7 @@ export default function QuestionsListScreen() {
         </TouchableOpacity>
       </View>
     </View>
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [search, selectedMode, selectedIntensity]);
+  ), [search, selectedCategoryFilter]);
 
   return (
     <View style={styles.container}>
@@ -343,6 +260,13 @@ export default function QuestionsListScreen() {
           <Text style={styles.headerTitle}>📋 Liste des questions</Text>
           <Text style={styles.headerSubtitle}>{totalVisible} / {questions.length} questions</Text>
         </View>
+        <TouchableOpacity
+          onPress={() => router.push('/tinder-sort')}
+          style={[styles.backBtn, { borderColor: '#FF2D55', backgroundColor: 'rgba(255, 45, 85, 0.15)' }]}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.backText, { color: '#FF6B9D' }]}>🔥 Tri Tinder</Text>
+        </TouchableOpacity>
       </Animated.View>
 
       {/* ── Liste avec les filtres en ListHeaderComponent ── */}
@@ -368,8 +292,7 @@ export default function QuestionsListScreen() {
             index={index + 1}
             id={item.id}
             text={item.text}
-            intensity={item.intensity}
-            modes={item.modes}
+            category={item.category}
           />
         )}
         ListEmptyComponent={
@@ -412,7 +335,10 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     paddingVertical: spacing.xs,
-    paddingRight: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   backText: {
     color: colors.accent,
@@ -559,9 +485,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     gap: spacing.xs,
   },
-  rowGold: {
-    backgroundColor: 'rgba(255, 215, 0, 0.04)',
-  },
   rowIndex: {
     color: colors.textTertiary,
     fontSize: 10,
@@ -570,16 +493,15 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontVariant: ['tabular-nums'],
   },
-  intensityBadge: {
+  categoryBadge: {
     borderWidth: 1,
     borderRadius: radii.sm,
-    paddingHorizontal: 5,
+    paddingHorizontal: 6,
     paddingVertical: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 36,
   },
-  intensityText: {
+  categoryBadgeText: {
     fontSize: 10,
     fontWeight: typography.weights.semibold,
   },
@@ -588,29 +510,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: typography.sizes.sm,
     lineHeight: typography.sizes.sm * 1.5,
-  },
-  questionTextGold: {
-    color: '#FFD700',
-  },
-  modesRow: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    gap: 3,
-    alignItems: 'flex-start',
-    paddingTop: 2,
-  },
-  modePill: {
-    borderRadius: radii.full,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-  },
-  modePillText: {
-    fontSize: 11,
-  },
-  moreModesText: {
-    color: colors.textTertiary,
-    fontSize: 10,
-    paddingTop: 3,
   },
   idText: {
     color: colors.textTertiary,

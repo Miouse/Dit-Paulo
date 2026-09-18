@@ -66,4 +66,17 @@ export const seenQuestionsService = {
     const list = await this.getSeenQuestionIds();
     return list.length;
   },
+
+  // Alias courts
+  async getSeenIds(): Promise<string[]> {
+    return this.getSeenQuestionIds();
+  },
+
+  async markSeen(questionId: string): Promise<string[]> {
+    return this.markQuestionSeen(questionId);
+  },
+
+  async resetSeen(): Promise<void> {
+    return this.resetAllSeenQuestions();
+  },
 };

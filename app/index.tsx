@@ -9,6 +9,7 @@ import { ScreenContainer } from '../components/ScreenContainer';
 import { colors, radii, shadows, spacing, typography } from '../constants/theme';
 import { useGame } from '../context/GameContext';
 import { questions } from '../data/questions';
+import { tinderSortService } from '../services/tinderSortService';
 
 export default function HomeScreen() {
   const { state, resetSeenQuestions } = useGame();
@@ -16,6 +17,17 @@ export default function HomeScreen() {
 
   const [showResetModal, setShowResetModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [tinderStats, setTinderStats] = useState({ kept: 0, rejected: 0 });
+
+  useEffect(() => {
+    tinderSortService.getSortState().then((s) => {
+      setTinderStats({ kept: s.keptIds.length, rejected: s.rejectedIds.length });
+    });
+    const unsub = tinderSortService.subscribe((s) => {
+      setTinderStats({ kept: s.keptIds.length, rejected: s.rejectedIds.length });
+    });
+    return () => unsub();
+  }, []);
 
   // Animation d'entrée
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -83,7 +95,7 @@ export default function HomeScreen() {
         {/* CTA principal */}
         <PrimaryButton
           label="COMMENCER"
-          onPress={() => router.push('/setup/mode')}
+          onPress={() => router.push('/setup/categories')}
           accessibilityLabel="Commencer une nouvelle partie"
           style={styles.mainButton}
         />
@@ -113,6 +125,23 @@ export default function HomeScreen() {
           variant="secondary"
           style={styles.mainButton}
           accessibilityLabel="Explorer toutes les cartes du jeu en grille"
+        />
+
+        {/* Bouton Mode Tri Tinder (Temporaire) */}
+        <PrimaryButton
+          label={
+            tinderStats.kept + tinderStats.rejected > 0
+              ? `🔥  Tri Tinder (${tinderStats.kept + tinderStats.rejected}/${questions.length} triées • ${tinderStats.rejected} exclue${tinderStats.rejected > 1 ? 's' : ''})`
+              : '🔥  Tri des Cartes (Mode Tinder)'
+          }
+          onPress={() => router.push('/tinder-sort')}
+          variant="secondary"
+          style={{
+            ...styles.mainButton,
+            borderColor: '#FF2D55',
+            backgroundColor: 'rgba(255, 45, 85, 0.1)',
+          }}
+          accessibilityLabel="Ouvrir le mode temporaire de tri des cartes façon Tinder"
         />
 
         {/* Bouton Liste des questions par catégorie */}

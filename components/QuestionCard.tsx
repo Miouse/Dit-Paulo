@@ -1,12 +1,12 @@
 // components/QuestionCard.tsx
 // Carte principale de jeu adaptative, responsive et animée (3D Flip + Slide Pioche ➔ Centre ➔ Défausse)
-// Support des cartes de Niveau 6 Dorées avec écriture noire intense !
+// Stylisation dynamique par Catégorie de question (sans niveaux d'intensité)
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { colors, radii, shadows, spacing, typography } from '../constants/theme';
 import { questionEngine } from '../services/questionEngine';
-import { INTENSITY_CONFIGS, type GameMode, type IntensityLevel } from '../types/game';
+import { CATEGORY_CONFIGS } from '../types/game';
 import type { Question } from '../types/question';
 
 interface QuestionCardProps {
@@ -14,26 +14,16 @@ interface QuestionCardProps {
   currentPlayerName?: string;
   currentPlayerPoints?: number;
   allPlayers?: { id: string; name: string }[];
-  mode?: GameMode | null;
+  pointsEnabled?: boolean;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  fun: 'Fun 🥳',
-  future: 'Avenir 🔮',
-  personality: 'Personnalité 👤',
-  relationships: 'Relations 🤝',
-  hypothetical: 'Dilemme 🌀',
-  debate: 'Débat ⚖️',
-  memories: 'Souvenir 📜',
-  dreams: 'Rêve 🌟',
-  flirt: 'Flirt 😏',
-  lifestyle: 'Mode de vie 🌿',
-  gossip: 'Extrême Potin 🔥',
-  philosophy: 'Philosophie 🧠',
-  hot: 'Hot 🌶️',
-};
-
-export function QuestionCard({ question, currentPlayerName, currentPlayerPoints, allPlayers, mode }: QuestionCardProps) {
+export function QuestionCard({
+  question,
+  currentPlayerName,
+  currentPlayerPoints,
+  allPlayers,
+  pointsEnabled = true,
+}: QuestionCardProps) {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const isDesktop = windowWidth >= 700;
 
@@ -41,9 +31,6 @@ export function QuestionCard({ question, currentPlayerName, currentPlayerPoints,
   const cardHeight = isDesktop
     ? 460
     : Math.min(380, Math.max(260, Math.floor(windowHeight * 0.41)));
-
-  const intensityConfig = INTENSITY_CONFIGS[question.intensity as IntensityLevel];
-  const modeColor = mode && colors.modes[mode] ? colors.modes[mode] : colors.modes.deep;
 
   // Calculer dynamiquement le décalage de glissement selon la taille d'écran
   const slideOffset = isDesktop ? 260 : Math.min(180, Math.floor(windowWidth * 0.4));
@@ -103,26 +90,32 @@ export function QuestionCard({ question, currentPlayerName, currentPlayerPoints,
           tension: 40,
           useNativeDriver: true,
         }),
-        Animated.spring(animatedValue, {
+        Animated.timing(animatedValue, {
           toValue: 0,
-          friction: 7,
-          tension: 40,
+          duration: 220,
           useNativeDriver: true,
         }),
       ]).start();
     });
-  }, [question.id, currentPlayerName]);
+  }, [question.id, currentPlayerName, slideOffset]);
+
+  // Interpolations pour l'effet de rotation physique
+  const rotateY = animatedValue.interpolate({
+    inputRange: [0, 90],
+    outputRange: ['0deg', '90deg'],
+  });
 
   const rotateZ = transX.interpolate({
     inputRange: [-slideOffset, 0, slideOffset],
-    outputRange: ['-10deg', '0deg', '10deg'],
+    outputRange: ['-6deg', '0deg', '6deg'],
   });
 
-  const rotateY = animatedValue.interpolate({
-    inputRange: [-90, 0, 90],
-    outputRange: ['-90deg', '0deg', '90deg'],
-  });
+  // Configuration visuelle de la catégorie
+  const catConfig =
+    CATEGORY_CONFIGS[displayedQuestion.category] || CATEGORY_CONFIGS.fun;
+  const themeColor = catConfig.color;
 
+  // Formatage du texte de la question avec les prénoms des joueurs
   const formattedText = React.useMemo(() => {
     return questionEngine.formatQuestionText(
       displayedQuestion.text,
@@ -131,20 +124,16 @@ export function QuestionCard({ question, currentPlayerName, currentPlayerPoints,
     );
   }, [displayedQuestion.id, displayedQuestion.text, displayedPlayer, allPlayers]);
 
-  // Est-ce une carte de Niveau 6 Mortel (Carte Dorée & Texte Noir) ?
-  const isGoldCard = displayedQuestion.intensity === 6;
-
   return (
     <View style={styles.outerContainer}>
       <Animated.View
         style={[
           styles.card,
-          isGoldCard && styles.goldCard,
           {
             maxWidth: isDesktop ? 380 : '100%',
             height: cardHeight,
-            borderColor: isGoldCard ? '#B38F00' : modeColor.primary,
-            shadowColor: isGoldCard ? '#FFD700' : modeColor.primary,
+            borderColor: themeColor,
+            shadowColor: themeColor,
             transform: [
               { perspective: 1000 },
               { translateX: transX },
@@ -155,33 +144,31 @@ export function QuestionCard({ question, currentPlayerName, currentPlayerPoints,
           },
         ]}
       >
-        {/* Motifs filigranes aux coins */}
-        <Text style={[styles.cornerMotif, styles.topLeft, isGoldCard && styles.goldCornerMotif]}>♠ ♥</Text>
-        <Text style={[styles.cornerMotif, styles.topRight, isGoldCard && styles.goldCornerMotif]}>♦ ♣</Text>
-        <Text style={[styles.cornerMotif, styles.bottomLeft, isGoldCard && styles.goldCornerMotif]}>♦ ♣</Text>
-        <Text style={[styles.cornerMotif, styles.bottomRight, isGoldCard && styles.goldCornerMotif]}>♠ ♥</Text>
+        {/* Motifs filigranes aux coins façon cartes de poker */}
+        <Text style={[styles.cornerMotif, styles.topLeft]}>♠ ♥</Text>
+        <Text style={[styles.cornerMotif, styles.topRight]}>♦ ♣</Text>
+        <Text style={[styles.cornerMotif, styles.bottomLeft]}>♦ ♣</Text>
+        <Text style={[styles.cornerMotif, styles.bottomRight]}>♠ ♥</Text>
 
         {/* Bordure intérieure */}
-        <View style={[styles.innerFrame, !isDesktop && styles.innerFrameMobile, { borderColor: isGoldCard ? 'rgba(0, 0, 0, 0.25)' : modeColor.muted }]}>
-          {/* En-tête : Badges de catégorie et d'intensité */}
+        <View
+          style={[
+            styles.innerFrame,
+            !isDesktop && styles.innerFrameMobile,
+            { borderColor: catConfig.badgeBg },
+          ]}
+        >
+          {/* En-tête : Badge thématique de Catégorie */}
           <View style={styles.badgeRow}>
-            <View style={[styles.badge, isGoldCard ? styles.goldBadge : { borderColor: modeColor.primary }]}>
-              <Text style={[styles.badgeText, isGoldCard ? styles.goldBadgeText : { color: modeColor.primary }]}>
-                {CATEGORY_LABELS[displayedQuestion.category] ?? displayedQuestion.category}
+            <View style={[styles.badge, { borderColor: themeColor, backgroundColor: catConfig.badgeBg }]}>
+              <Text style={[styles.badgeText, { color: themeColor }]}>
+                {catConfig.emoji} {catConfig.label}
               </Text>
             </View>
-            {intensityConfig && !isGoldCard && (
-              <View style={[styles.badge, styles.intensityBadge]}>
-                <Text style={styles.badgeText}>
-                  {intensityConfig.emoji} {intensityConfig.label}
-                </Text>
-              </View>
-            )}
-            {isGoldCard && (
-              <View style={[styles.badge, styles.mortelBadge]}>
-                <Text style={styles.mortelBadgeText}>💀 MORTEL (+10 Pts)</Text>
-              </View>
-            )}
+
+            <View style={styles.idBadge}>
+              <Text style={styles.idBadgeText}>#{displayedQuestion.id}</Text>
+            </View>
           </View>
 
           {/* Corps de la carte : Question centrale */}
@@ -189,198 +176,158 @@ export function QuestionCard({ question, currentPlayerName, currentPlayerPoints,
             <Text
               style={[
                 styles.questionText,
-                isGoldCard && styles.goldQuestionText,
                 !isDesktop && styles.mobileQuestionText,
-                displayedQuestion.text.length > 90 && (isDesktop ? styles.smallQuestionText : styles.mobileSmallQuestionText),
+                displayedQuestion.text.length > 90 &&
+                  (isDesktop ? styles.smallQuestionText : styles.mobileSmallQuestionText),
               ]}
             >
               {formattedText}
             </Text>
           </View>
 
-          {/* Pied de carte : Tour du joueur et solde de points */}
-          {displayedPlayer && (
-            <View style={[styles.playerFooter, isGoldCard && styles.goldPlayerFooter]}>
-              <Text style={[styles.playerLabel, isGoldCard && styles.goldPlayerLabel]}>
-                À <Text style={[styles.playerName, { color: isGoldCard ? '#000000' : modeColor.primary }]}>{displayedPlayer}</Text> de répondre
-                {currentPlayerPoints !== undefined && (
-                  <Text style={[styles.pointsPill, isGoldCard && styles.goldPointsPill]}>
-                    {` (Score : ${currentPlayerPoints} Pt${currentPlayerPoints > 1 ? 's' : ''})`}
+          {/* Pied de carte : Nom du joueur interrogé */}
+          <View style={[styles.playerTagContainer, !isDesktop && styles.playerTagContainerMobile]}>
+            <Text style={[styles.playerLabel, !isDesktop && styles.playerLabelMobile]}>
+              {displayedPlayer ? (
+                <>
+                  À ton tour :{' '}
+                  <Text style={[styles.playerNameHighlight, { color: themeColor }]}>
+                    {displayedPlayer}
                   </Text>
-                )}
-              </Text>
-            </View>
-          )}
+                  {pointsEnabled && currentPlayerPoints !== undefined && (
+                    <Text style={styles.playerPointsText}>
+                      {' '}({currentPlayerPoints} Pt{currentPlayerPoints > 1 ? 's' : ''})
+                    </Text>
+                  )}
+                </>
+              ) : (
+                'Question pour le groupe'
+              )}
+            </Text>
+          </View>
         </View>
       </Animated.View>
     </View>
   );
 }
 
+// ─── STYLES ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   outerContainer: {
-    flex: 1,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
   },
   card: {
     width: '100%',
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: radii.xxl,
+    backgroundColor: colors.surface,
+    borderRadius: 28,
     borderWidth: 2,
-    padding: spacing.sm,
+    padding: spacing.md,
     justifyContent: 'space-between',
+    ...shadows.lg,
+    elevation: 8,
     position: 'relative',
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  goldCard: {
-    backgroundColor: '#FFD700',
-    borderColor: '#B38F00',
-    shadowColor: '#FFD700',
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
   },
   innerFrame: {
     flex: 1,
-    borderRadius: radii.xl,
     borderWidth: 1,
-    padding: spacing.md,
+    borderRadius: 20,
+    padding: spacing.lg,
     justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.015)',
   },
   innerFrameMobile: {
-    padding: spacing.sm,
+    padding: spacing.md,
   },
   cornerMotif: {
     position: 'absolute',
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.08)',
-    fontWeight: 'bold',
-    letterSpacing: 2,
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.12)',
+    fontFamily: 'monospace',
   },
-  goldCornerMotif: {
-    color: 'rgba(0, 0, 0, 0.25)',
-  },
-  topLeft: {
-    top: 10,
-    left: 12,
-  },
-  topRight: {
-    top: 10,
-    right: 12,
-  },
-  bottomLeft: {
-    bottom: 10,
-    left: 12,
-  },
-  bottomRight: {
-    bottom: 10,
-    right: 12,
-  },
+  topLeft: { top: 12, left: 14 },
+  topRight: { top: 12, right: 14 },
+  bottomLeft: { bottom: 12, left: 14 },
+  bottomRight: { bottom: 12, right: 14 },
   badgeRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   badge: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
-  },
-  goldBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    borderColor: '#000000',
-  },
-  goldBadgeText: {
-    color: '#000000',
-  },
-  intensityBadge: {
-    backgroundColor: colors.accentMuted,
-    borderColor: colors.accentDark,
-  },
-  goldIntensityBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    borderColor: '#000000',
-  },
-  mortelBadge: {
-    backgroundColor: '#0B0C10',
-    borderColor: '#FFD700',
-  },
-  mortelBadgeText: {
-    fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.heavy,
-    color: '#FFD700',
-  },
-  pointsPill: {
-    fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.bold,
-    color: '#FFD60A',
-  },
-  goldPointsPill: {
-    color: '#000000',
-    fontWeight: typography.weights.heavy,
+    borderWidth: 1.5,
+    backgroundColor: colors.surfaceElevated,
   },
   badgeText: {
     fontSize: typography.sizes.xs,
     fontWeight: typography.weights.bold,
-    color: colors.textPrimary,
+    letterSpacing: 0.2,
+  },
+  idBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  idBadgeText: {
+    fontSize: 10,
+    color: colors.textTertiary,
+    fontFamily: 'monospace',
   },
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
   },
   questionText: {
-    fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.heavy,
+    fontSize: 22,
+    fontWeight: typography.weights.bold,
     color: colors.textPrimary,
-    lineHeight: typography.sizes.xl * 1.4,
     textAlign: 'center',
+    lineHeight: 34,
     letterSpacing: -0.3,
   },
-  goldQuestionText: {
-    color: '#0B0C10',
+  smallQuestionText: {
+    fontSize: 18,
+    lineHeight: 28,
   },
   mobileQuestionText: {
-    fontSize: typography.sizes.lg,
-    lineHeight: typography.sizes.lg * 1.35,
-  },
-  smallQuestionText: {
-    fontSize: typography.sizes.lg,
-    lineHeight: typography.sizes.lg * 1.35,
+    fontSize: 18,
+    lineHeight: 27,
   },
   mobileSmallQuestionText: {
-    fontSize: typography.sizes.md,
-    lineHeight: typography.sizes.md * 1.35,
+    fontSize: 15,
+    lineHeight: 23,
   },
-  playerFooter: {
+  playerTagContainer: {
     alignItems: 'center',
     paddingTop: spacing.xs,
     borderTopWidth: 1,
-    borderTopColor: colors.surfaceBorder,
+    borderTopColor: 'rgba(255, 255, 255, 0.07)',
   },
-  goldPlayerFooter: {
-    borderTopColor: 'rgba(0, 0, 0, 0.2)',
+  playerTagContainerMobile: {
+    paddingTop: 4,
   },
   playerLabel: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
+    fontWeight: typography.weights.medium,
   },
-  goldPlayerLabel: {
-    color: 'rgba(0, 0, 0, 0.75)',
+  playerLabelMobile: {
+    fontSize: typography.sizes.xs,
   },
-  playerName: {
-    fontSize: typography.sizes.md,
+  playerNameHighlight: {
     fontWeight: typography.weights.heavy,
+  },
+  playerPointsText: {
+    fontSize: typography.sizes.xs,
+    color: '#FFD700',
+    fontWeight: '700',
   },
 });

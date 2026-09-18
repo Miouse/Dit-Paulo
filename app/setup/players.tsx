@@ -18,11 +18,12 @@ import { ScreenContainer } from '../../components/ScreenContainer';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 import { useGame } from '../../context/GameContext';
 import { playersService } from '../../services/playersService';
+import { questionEngine } from '../../services/questionEngine';
 import type { Player } from '../../types/game';
 import { MAX_PLAYERS } from '../../types/game';
 
 export default function PlayersScreen() {
-  const { setPlayers, state } = useGame();
+  const { setPlayers, state, setCurrentQuestion, markQuestionSeen } = useGame();
 
   // Initialiser avec les joueurs du context ou par défaut
   const [players, setLocalPlayers] = useState<Player[]>(() => {
@@ -92,7 +93,22 @@ export default function PlayersScreen() {
     await playersService.savePlayers(cleanedPlayers);
 
     setPlayers(cleanedPlayers);
-    router.push('/setup/intensity');
+
+    // Piocher la première question parmi les catégories choisies
+    const firstQuestion = questionEngine.getNextQuestion({
+      categories: state.selectedCategories,
+      playerCount: cleanedPlayers.length,
+      seenQuestionIds: state.seenQuestionIds,
+    });
+
+    if (firstQuestion) {
+      setCurrentQuestion(firstQuestion.id);
+      await markQuestionSeen(firstQuestion.id);
+    } else {
+      setCurrentQuestion('');
+    }
+
+    router.push('/game');
   };
 
   return (
@@ -178,9 +194,9 @@ export default function PlayersScreen() {
         {/* Pied de page */}
         <View style={styles.footer}>
           <PrimaryButton
-            label="Continuer"
+            label="Lancer la partie 🚀"
             onPress={handleContinue}
-            accessibilityLabel="Continuer vers le choix de l'intensité"
+            accessibilityLabel="Lancer la partie Dit-Paulo"
           />
         </View>
       </KeyboardAvoidingView>

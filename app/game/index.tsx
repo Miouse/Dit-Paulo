@@ -2,7 +2,7 @@
 // Écran principal de jeu — tirage des cartes, favoris, rotation des joueurs
 
 import { router } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { CardDeck } from '../../components/CardDeck';
 import { PrimaryButton } from '../../components/PrimaryButton';
@@ -13,13 +13,7 @@ import { useGame } from '../../context/GameContext';
 import { favoritesService } from '../../services/favoritesService';
 import { jokeEngine, type JokeEffect } from '../../services/jokeEngine';
 import { questionEngine } from '../../services/questionEngine';
-import { INTENSITY_POINTS, MODE_CONFIGS, type Player } from '../../types/game';
-
-// Points d'une question (INTENSITY_POINTS importé depuis types/game — source unique)
-const getQuestionPoints = (q?: { intensity: number } | null): number => {
-  if (!q) return 1;
-  return INTENSITY_POINTS[Number(q.intensity) as keyof typeof INTENSITY_POINTS] ?? 1;
-};
+import { type Player } from '../../types/game';
 
 export default function GameScreen() {
   const { width: windowWidth } = useWindowDimensions();
@@ -38,7 +32,6 @@ export default function GameScreen() {
 
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeJoke, setActiveJoke] = useState<JokeEffect | null>(null);
-  const [jokeCountdown, setJokeCountdown] = useState<number | null>(null);
   const [showPodium, setShowPodium] = useState(false);
 
   // ─── États Joker Double Niveau ─────────────────────────────────────────────
@@ -70,54 +63,32 @@ export default function GameScreen() {
     : null;
 
   // Calculer le nombre de cartes de la pioche (restantes) et défaussées
-  const totalEligibleCount = state.mode && state.intensity
-    ? questionEngine.getEligibleQuestions({
-        mode: state.mode,
-        intensity: state.intensity,
+  const totalEligibleCount = useMemo(
+    () =>
+      questionEngine.getEligibleQuestions({
+        categories: state.selectedCategories,
         playerCount: state.players.length,
         seenQuestionIds: [],
-      }).length
-    : 0;
+      }).length,
+    [state.selectedCategories, state.players.length]
+  );
 
   const discardCount = state.seenQuestionIds.length;
   const drawCount = Math.max(0, totalEligibleCount - discardCount);
 
-  // Détection du Code Blague (ex: Sam -> Game Over 8s après son tour)
+  // Détection du Code Blague (ex: Sam -> Game Over)
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
-
     async function checkJoke() {
       if (!currentPlayer?.name) {
         setActiveJoke(null);
-        setJokeCountdown(null);
         return;
       }
 
       const joke = await jokeEngine.getJokeForPlayer(currentPlayer.name);
-      if (joke && joke.type === 'GAME_OVER') {
-        setActiveJoke(joke);
-        setJokeCountdown(joke.timerSeconds);
-
-        interval = setInterval(() => {
-          setJokeCountdown((prev) => {
-            if (prev === null || prev <= 1) {
-              if (interval) clearInterval(interval);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      } else {
-        setActiveJoke(null);
-        setJokeCountdown(null);
-      }
+      setActiveJoke(joke && joke.type === 'GAME_OVER' ? joke : null);
     }
 
     checkJoke();
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
   }, [currentPlayer?.name]);
 
   // useEffect Timer Patate Chaude — reset à chaque nouvelle question, décompte 15→0
@@ -162,25 +133,15 @@ export default function GameScreen() {
     setIsFavorite(newStatus);
   };
 
-  // Obtenir la question suivante & attribuer les points du niveau (Niv 1=+1, Niv 2=+2, Niv 3=+3, Niv 4=+4, Niv 5=+5, Niv 6=+10)
-  const handleNextQuestion = () => {
-    if (!state.mode || !state.intensity) return;
-
-    if (effectivePlayer && currentQuestion) {
-      const ptsEarned = getQuestionPoints(currentQuestion);
-      addPlayerPoints(effectivePlayer.id, ptsEarned);
+  // Piocher la question suivante (avec ou sans rotation de joueur)
+  const drawNext = (advancePlayer: boolean = true) => {
+    if (advancePlayer) {
+      setForcedPlayerIndex(null);
+      nextPlayer();
     }
 
-    // Réinitialiser le Joker (le cycle reprend normalement)
-    setForcedPlayerIndex(null);
-
-    // Passer au joueur suivant
-    nextPlayer();
-
-    // Piocher la prochaine question
     const nextQ = questionEngine.getNextQuestion({
-      mode: state.mode,
-      intensity: state.intensity,
+      categories: state.selectedCategories,
       playerCount: state.players.length,
       seenQuestionIds: state.seenQuestionIds,
       lastCategory: currentQuestion?.category,
@@ -190,40 +151,26 @@ export default function GameScreen() {
       setCurrentQuestion(nextQ.id);
       markQuestionSeen(nextQ.id);
     } else {
-      // Toutes les questions ont été tirées
       setCurrentQuestion('');
     }
   };
 
-  // Réponse insatisfaisante / langue de bois (+0 Pt sur Niv 1-5, -10 Pts sur Niv 6 Mortel)
+  // Obtenir la question suivante & attribuer +1 Pt si points activés
+  const handleNextQuestion = () => {
+    if (state.pointsEnabled && effectivePlayer) {
+      addPlayerPoints(effectivePlayer.id, 1);
+    }
+    drawNext(true);
+  };
+
+  // Réponse insatisfaisante / langue de bois (+0 Pt)
   const handleUnsatisfactoryResponse = () => {
-    if (!state.mode || !state.intensity) return;
+    drawNext(true);
+  };
 
-    if (effectivePlayer && currentQuestion && Number(currentQuestion.intensity) === 6) {
-      deductPlayerPoints(effectivePlayer.id, 10);
-    }
-
-    // Réinitialiser le Joker (le cycle reprend normalement)
-    setForcedPlayerIndex(null);
-
-    // Passer au joueur suivant
-    nextPlayer();
-
-    // Piocher la prochaine question
-    const nextQ = questionEngine.getNextQuestion({
-      mode: state.mode,
-      intensity: state.intensity,
-      playerCount: state.players.length,
-      seenQuestionIds: state.seenQuestionIds,
-      lastCategory: currentQuestion?.category,
-    });
-
-    if (nextQ) {
-      setCurrentQuestion(nextQ.id);
-      markQuestionSeen(nextQ.id);
-    } else {
-      setCurrentQuestion('');
-    }
+  // Passer la question sans changer de joueur
+  const handleSkipQuestion = () => {
+    drawNext(false);
   };
 
   // Raccourci clavier : Appuyer sur la touche Espace pour changer de question
@@ -251,26 +198,6 @@ export default function GameScreen() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-
-  // Passer la question sans changer de joueur
-  const handleSkipQuestion = () => {
-    if (!state.mode || !state.intensity) return;
-
-    const nextQ = questionEngine.getNextQuestion({
-      mode: state.mode,
-      intensity: state.intensity,
-      playerCount: state.players.length,
-      seenQuestionIds: state.seenQuestionIds,
-      lastCategory: currentQuestion?.category,
-    });
-
-    if (nextQ) {
-      setCurrentQuestion(nextQ.id);
-      markQuestionSeen(nextQ.id);
-    } else {
-      setCurrentQuestion('');
-    }
-  };
 
   // ── Joker Hasard (-10 Pts) : roulette aléatoire, joueur actuel exclu ────────
   const isJokerRandomAvailable = !!currentQuestion && (currentPlayer?.points ?? 0) >= 10 && forcedPlayerIndex === null;
@@ -335,8 +262,6 @@ export default function GameScreen() {
     router.replace('/');
   };
 
-  const modeConfig = state.mode ? MODE_CONFIGS[state.mode] : null;
-
   return (
     <ScreenContainer>
       {/* Barre supérieure */}
@@ -351,20 +276,23 @@ export default function GameScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => setShowPodium(true)}
-          style={[styles.finishButton, !isDesktop && styles.finishButtonMobile]}
-          accessibilityLabel="Finir la partie et afficher le podium des scores"
-        >
-          <Text style={[styles.finishText, !isDesktop && styles.finishTextMobile]}>
-            {isDesktop ? '🏁 Finir la partie' : '🏁 Finir'}
-          </Text>
-        </TouchableOpacity>
+        {state.pointsEnabled && (
+          <TouchableOpacity
+            onPress={() => setShowPodium(true)}
+            style={[styles.finishButton, !isDesktop && styles.finishButtonMobile]}
+            accessibilityLabel="Finir la partie et afficher le podium des scores"
+          >
+            <Text style={[styles.finishText, !isDesktop && styles.finishTextMobile]}>
+              {isDesktop ? '🏁 Finir la partie' : '🏁 Finir'}
+            </Text>
+          </TouchableOpacity>
+        )}
 
-        {modeConfig && (
+        {/* Badge catégorie courante */}
+        {currentQuestion && (
           <View style={[styles.modeBadge, !isDesktop && styles.modeBadgeMobile]}>
             <Text style={[styles.modeBadgeText, !isDesktop && styles.modeBadgeTextMobile]}>
-              {modeConfig.emoji} {modeConfig.label}
+              {currentQuestion.category.toUpperCase()}
             </Text>
           </View>
         )}
@@ -376,7 +304,7 @@ export default function GameScreen() {
           {isDesktop ? (
             /* Mode Tabletop 3 colonnes pour grand écran */
             <View style={styles.tabletopRow}>
-              <CardDeck type="draw" count={drawCount} mode={state.mode} />
+              <CardDeck type="draw" count={drawCount} />
 
               <View style={styles.centerSlot}>
                 <QuestionCard
@@ -384,18 +312,18 @@ export default function GameScreen() {
                   currentPlayerName={effectivePlayer?.name}
                   currentPlayerPoints={effectivePlayer?.points}
                   allPlayers={state.players}
-                  mode={state.mode}
+                  pointsEnabled={state.pointsEnabled}
                 />
               </View>
 
-              <CardDeck type="discard" count={discardCount} mode={state.mode} />
+              <CardDeck type="discard" count={discardCount} />
             </View>
           ) : (
             /* Mode Mobile compact */
             <View style={styles.mobileGameContainer}>
               <View style={styles.mobileDeckRow}>
-                <CardDeck type="draw" count={drawCount} mode={state.mode} compact />
-                <CardDeck type="discard" count={discardCount} mode={state.mode} compact />
+                <CardDeck type="draw" count={drawCount} compact />
+                <CardDeck type="discard" count={discardCount} compact />
               </View>
 
               <View style={styles.centerSlotMobile}>
@@ -404,7 +332,7 @@ export default function GameScreen() {
                   currentPlayerName={effectivePlayer?.name}
                   currentPlayerPoints={effectivePlayer?.points}
                   allPlayers={state.players}
-                  mode={state.mode}
+                  pointsEnabled={state.pointsEnabled}
                 />
               </View>
             </View>
@@ -422,35 +350,39 @@ export default function GameScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={handleJokerRandom}
-              disabled={!isJokerRandomAvailable}
-              style={[
-                styles.actionChip,
-                !isDesktop && styles.actionChipMobile,
-                isJokerRandomAvailable ? styles.jokerActive : styles.jokerDisabled,
-              ]}
-              accessibilityLabel="Joker Hasard : passer la carte à un joueur aléatoire (-10 Pts)"
-            >
-              <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
-                🎰 Joker -10
-              </Text>
-            </TouchableOpacity>
+            {state.pointsEnabled && (
+              <>
+                <TouchableOpacity
+                  onPress={handleJokerRandom}
+                  disabled={!isJokerRandomAvailable}
+                  style={[
+                    styles.actionChip,
+                    !isDesktop && styles.actionChipMobile,
+                    isJokerRandomAvailable ? styles.jokerActive : styles.jokerDisabled,
+                  ]}
+                  accessibilityLabel="Joker Hasard : passer la carte à un joueur aléatoire (-10 Pts)"
+                >
+                  <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
+                    🎰 Joker -10
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => setShowVictimPicker(true)}
-              disabled={!isJokerVictimAvailable}
-              style={[
-                styles.actionChip,
-                !isDesktop && styles.actionChipMobile,
-                isJokerVictimAvailable ? styles.jokerVictimActive : styles.jokerDisabled,
-              ]}
-              accessibilityLabel="Joker Victime : choisir qui répond à ta place (-15 Pts)"
-            >
-              <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
-                😈 Joker -15
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setShowVictimPicker(true)}
+                  disabled={!isJokerVictimAvailable}
+                  style={[
+                    styles.actionChip,
+                    !isDesktop && styles.actionChipMobile,
+                    isJokerVictimAvailable ? styles.jokerVictimActive : styles.jokerDisabled,
+                  ]}
+                  accessibilityLabel="Joker Victime : choisir qui répond à ta place (-15 Pts)"
+                >
+                  <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
+                    😈 Joker -15
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
 
             <TouchableOpacity
               onPress={() => setShowPodium(true)}
@@ -458,7 +390,7 @@ export default function GameScreen() {
               accessibilityLabel="Finir la partie et voir le podium"
             >
               <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
-                🏆 Podium
+                {state.pointsEnabled ? '🏆 Podium' : '🏁 Bilan'}
               </Text>
             </TouchableOpacity>
 
@@ -501,36 +433,48 @@ export default function GameScreen() {
             </View>
           )}
 
-          {/* Boutons de validation du groupe : Satisfaisant (+Pts) vs Insatisfaisant (+0 Pt / -10 Pts) */}
+          {/* Boutons d'actions : Si points activés (Satisfaisant vs Insatisfaisant), sinon (Question suivante) */}
           <View style={styles.footer}>
-            <View style={styles.voteButtonsContainer}>
-              <TouchableOpacity
-                onPress={handleNextQuestion}
-                style={[styles.voteButton, styles.satisfactoryButton]}
-                accessibilityLabel="Valider la réponse satisfaisante et gagner des points"
-              >
-                <Text style={styles.voteButtonText}>
-                  {(() => {
-                    const pts = getQuestionPoints(currentQuestion);
-                    return isDesktop
-                      ? `SATISFAISANT 👍 (+${pts} Pt${pts > 1 ? 's' : ''})`
-                      : `👍 +${pts} Pt${pts > 1 ? 's' : ''}`;
-                  })()}
-                </Text>
-              </TouchableOpacity>
+            {state.pointsEnabled ? (
+              <View style={styles.voteButtonsContainer}>
+                <TouchableOpacity
+                  onPress={handleNextQuestion}
+                  style={[styles.voteButton, styles.satisfactoryButton]}
+                  accessibilityLabel="Valider la réponse satisfaisante (+1 Pt)"
+                >
+                  <Text style={styles.voteButtonText}>
+                    {isDesktop ? 'SATISFAISANT 👍 (+1 Pt)' : '👍 +1 Pt'}
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={handleUnsatisfactoryResponse}
-                style={[styles.voteButton, styles.unsatisfactoryButton]}
-                accessibilityLabel="Réponse insatisfaisante ou langue de bois"
-              >
-                <Text style={[styles.voteButtonText, styles.unsatisfactoryButtonText]}>
-                  {Number(currentQuestion?.intensity) === 6
-                    ? (isDesktop ? 'INSATISFAISANT 👎 (-10 Pts)' : '👎 -10 Pts')
-                    : (isDesktop ? 'INSATISFAISANT 👎 (+0 Pt)' : '👎 Passe')}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  onPress={handleUnsatisfactoryResponse}
+                  style={[styles.voteButton, styles.unsatisfactoryButton]}
+                  accessibilityLabel="Réponse insatisfaisante ou langue de bois"
+                >
+                  <Text style={[styles.voteButtonText, styles.unsatisfactoryButtonText]}>
+                    {isDesktop ? 'INSATISFAISANT 👎 (+0 Pt)' : '👎 Passe'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.voteButtonsContainer}>
+                <TouchableOpacity
+                  onPress={handleNextQuestion}
+                  style={[styles.voteButton, styles.satisfactoryButton, { flex: 2 }]}
+                  accessibilityLabel="Passer à la question suivante"
+                >
+                  <Text style={styles.voteButtonText}>QUESTION SUIVANTE ➔</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleSkipQuestion}
+                  style={[styles.voteButton, styles.unsatisfactoryButton, { flex: 1 }]}
+                  accessibilityLabel="Passer cette carte"
+                >
+                  <Text style={[styles.voteButtonText, styles.unsatisfactoryButtonText]}>Passer ⏭️</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       ) : (
@@ -538,30 +482,24 @@ export default function GameScreen() {
         <View style={styles.exhaustedContainer}>
           <Text style={styles.exhaustedEmoji}>🎉</Text>
           <Text style={styles.exhaustedTitle}>
-            Vous avez fait le tour de cette catégorie !
+            Vous avez fait le tour de la sélection !
           </Text>
           <Text style={styles.exhaustedSubtitle}>
-            Vous avez parcouru toutes les questions disponibles pour ce mode et cette intensité.
+            Vous avez parcouru toutes les questions disponibles pour les catégories sélectionnées.
           </Text>
 
           <View style={styles.exhaustedActions}>
             <PrimaryButton
-              label="Recommencer"
+              label="Recommencer la pioche"
               onPress={() => {
                 resetSession();
-                router.replace('/setup/mode');
+                router.replace('/setup/categories');
               }}
               style={styles.exhaustedButton}
             />
             <PrimaryButton
-              label="Changer l'intensité"
-              onPress={() => router.push('/setup/intensity')}
-              variant="secondary"
-              style={styles.exhaustedButton}
-            />
-            <PrimaryButton
-              label="Changer le mode"
-              onPress={() => router.push('/setup/mode')}
+              label="Changer les catégories"
+              onPress={() => router.push('/setup/categories')}
               variant="secondary"
               style={styles.exhaustedButton}
             />
@@ -614,7 +552,7 @@ export default function GameScreen() {
                 onPress={() => {
                   setActiveJoke(null);
                   resetSession();
-                  router.replace('/setup/mode');
+                  router.replace('/setup/categories');
                 }}
                 style={{ width: '100%' }}
               />
@@ -712,10 +650,14 @@ export default function GameScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.podiumCard}>
-            <Text style={styles.podiumEmoji}>🏆</Text>
-            <Text style={styles.podiumTitle}>PODIUM DES SCORES</Text>
+            <Text style={styles.podiumEmoji}>{state.pointsEnabled ? '🏆' : '🥂'}</Text>
+            <Text style={styles.podiumTitle}>
+              {state.pointsEnabled ? 'PODIUM DES SCORES' : 'FIN DE PARTIE'}
+            </Text>
             <Text style={styles.podiumSubtitle}>
-              {rankedPlayers[0] ? `${rankedPlayers[0].name} remporte la victoire ! 🎉` : 'Fin de la partie !'}
+              {state.pointsEnabled
+                ? (rankedPlayers[0] ? `${rankedPlayers[0].name} remporte la victoire ! 🎉` : 'Fin de la partie !')
+                : 'Superbe session ! Merci pour ces beaux partages.'}
             </Text>
 
             <ScrollView style={styles.podiumList} showsVerticalScrollIndicator={false}>
@@ -726,14 +668,16 @@ export default function GameScreen() {
                     key={player.id}
                     style={[
                       styles.podiumItem,
-                      index === 0 && styles.firstPlaceItem,
+                      state.pointsEnabled && index === 0 && styles.firstPlaceItem,
                     ]}
                   >
                     <View style={styles.podiumLeft}>
-                      <Text style={styles.podiumMedal}>{medal}</Text>
+                      <Text style={styles.podiumMedal}>{state.pointsEnabled ? medal : '✨'}</Text>
                       <Text style={styles.podiumPlayerName}>{player.name}</Text>
                     </View>
-                    <Text style={styles.podiumScore}>⭐ {player.points ?? 0} Pts</Text>
+                    {state.pointsEnabled && (
+                      <Text style={styles.podiumScore}>⭐ {player.points ?? 0} Pts</Text>
+                    )}
                   </View>
                 );
               })}
@@ -741,11 +685,11 @@ export default function GameScreen() {
 
             <View style={styles.podiumActions}>
               <PrimaryButton
-                label="🔄 REJOUER UNE PARTIE"
+                label="🔄 NOUVELLE PARTIE"
                 onPress={() => {
                   setShowPodium(false);
                   resetSession();
-                  router.replace('/setup/mode');
+                  router.replace('/setup/categories');
                 }}
               />
               <TouchableOpacity

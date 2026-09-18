@@ -1,5 +1,5 @@
 // app/cards.tsx
-// Galerie complète des 539 cartes du jeu en grille responsive (4 à 5 colonnes sur grand écran)
+// Galerie complète des cartes du jeu en grille responsive par Catégorie
 
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
@@ -16,29 +16,13 @@ import {
 import { ScreenContainer } from '../components/ScreenContainer';
 import { colors, radii, shadows, spacing, typography } from '../constants/theme';
 import { questions } from '../data/questions';
-import { INTENSITY_CONFIGS, INTENSITY_POINTS, MODE_CONFIGS, type GameMode, type IntensityLevel } from '../types/game';
+import { CATEGORY_CONFIGS, type QuestionCategory } from '../types/game';
 import type { Question } from '../types/question';
-
-const CATEGORY_LABELS: Record<string, string> = {
-  fun: 'Fun 🥳',
-  future: 'Avenir 🔮',
-  personality: 'Personnalité 👤',
-  relationships: 'Relations 🤝',
-  hypothetical: 'Dilemme 🌀',
-  debate: 'Débat ⚖️',
-  memories: 'Souvenir 📜',
-  dreams: 'Rêve 🌟',
-  flirt: 'Flirt 😏',
-  lifestyle: 'Mode de vie 🌿',
-  gossip: 'Extrême Potin 🔥',
-  philosophy: 'Philosophie 🧠',
-  hot: 'Hot 🌶️',
-};
 
 export default function CardsGalleryScreen() {
   const { width: windowWidth } = useWindowDimensions();
 
-  // Calculer le nombre de colonnes dynamique (5 sur très grand écran, 4 sur desktop, 3 sur tablette, 2 sur mobile)
+  // Calculer le nombre de colonnes dynamique
   const numColumns = useMemo(() => {
     if (windowWidth >= 1300) return 5;
     if (windowWidth >= 960) return 4;
@@ -47,92 +31,62 @@ export default function CardsGalleryScreen() {
   }, [windowWidth]);
 
   // Filtres
-  const [selectedMode, setSelectedMode] = useState<GameMode | 'all'>('all');
-  const [selectedIntensity, setSelectedIntensity] = useState<IntensityLevel | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const allCategories = Object.keys(CATEGORY_CONFIGS) as QuestionCategory[];
 
   // Cartes filtrées
   const filteredQuestions = useMemo(() => {
     return questions.filter((q) => {
-      // Filtre mode
-      if (selectedMode !== 'all' && !q.modes.includes(selectedMode)) {
-        return false;
-      }
-      // Filtre intensité
-      if (selectedIntensity !== 'all' && q.intensity !== selectedIntensity) {
+      // Filtre catégorie
+      if (selectedCategory !== 'all' && q.category !== selectedCategory) {
         return false;
       }
       // Filtre recherche textuelle
       if (searchQuery.trim().length > 0) {
         const query = searchQuery.toLowerCase();
         const textMatch = q.text.toLowerCase().includes(query);
-        const categoryMatch = (CATEGORY_LABELS[q.category] ?? q.category).toLowerCase().includes(query);
-        return textMatch || categoryMatch;
+        const catConfig = CATEGORY_CONFIGS[q.category];
+        const categoryMatch = (catConfig?.label ?? q.category).toLowerCase().includes(query);
+        return textMatch || categoryMatch || q.id.toLowerCase().includes(query);
       }
       return true;
     });
-  }, [selectedMode, selectedIntensity, searchQuery]);
+  }, [selectedCategory, searchQuery]);
 
   const renderCardItem = ({ item }: { item: Question }) => {
-    const isGoldCard = item.intensity === 6;
-    const intensityConfig = INTENSITY_CONFIGS[item.intensity as IntensityLevel];
-    const modeColor = item.modes[0] && colors.modes[item.modes[0]] ? colors.modes[item.modes[0]] : colors.modes.deep;
+    const catConfig = CATEGORY_CONFIGS[item.category] || CATEGORY_CONFIGS.fun;
 
     return (
-      <View
-        style={[
-          styles.cardContainer,
-          { width: `${100 / numColumns}%` as any },
-        ]}
-      >
-        <View
-          style={[
-            styles.miniCard,
-            isGoldCard && styles.goldMiniCard,
-            { borderColor: isGoldCard ? '#B38F00' : modeColor.primary },
-          ]}
-        >
+      <View style={[styles.cardContainer, { width: `${100 / numColumns}%` as any }]}>
+        <View style={[styles.miniCard, { borderColor: catConfig.color }]}>
           {/* Motifs filigranes */}
-          <Text style={[styles.cornerMotif, styles.topLeft, isGoldCard && styles.goldMotif]}>♠ ♥</Text>
-          <Text style={[styles.cornerMotif, styles.topRight, isGoldCard && styles.goldMotif]}>♦ ♣</Text>
+          <Text style={[styles.cornerMotif, styles.topLeft]}>♠ ♥</Text>
+          <Text style={[styles.cornerMotif, styles.topRight]}>♦ ♣</Text>
 
           {/* Badges d'en-tête */}
           <View style={styles.badgeRow}>
-            <View style={[styles.badge, isGoldCard ? styles.goldBadge : { borderColor: modeColor.primary }]}>
-              <Text style={[styles.badgeText, isGoldCard ? styles.goldBadgeText : { color: modeColor.primary }]}>
-                {CATEGORY_LABELS[item.category] ?? item.category}
+            <View style={[styles.categoryBadge, { borderColor: catConfig.color, backgroundColor: catConfig.badgeBg }]}>
+              <Text style={[styles.categoryBadgeText, { color: catConfig.color }]}>
+                {catConfig.emoji} {catConfig.label}
               </Text>
             </View>
-            {intensityConfig && (
-              <View style={[styles.badge, styles.intensityBadge, isGoldCard && styles.goldBadge]}>
-                <Text style={[styles.badgeText, isGoldCard && styles.goldBadgeText]}>
-                  {intensityConfig.emoji} N.{item.intensity}
-                </Text>
-              </View>
-            )}
+            <Text style={styles.idBadge}>#{item.id}</Text>
           </View>
 
-          {/* Texte de la question */}
-          <Text
-            style={[
-              styles.questionText,
-              isGoldCard && styles.goldQuestionText,
-            ]}
-            numberOfLines={6}
-          >
+          {/* Corps de la question */}
+          <Text style={styles.questionSnippet} numberOfLines={6}>
             {item.text}
           </Text>
 
           {/* Pied de mini carte */}
-          <View style={[styles.cardFooter, isGoldCard && styles.goldCardFooter]}>
-            <Text style={[styles.modesLabel, isGoldCard && styles.goldModesLabel]}>
-              {item.modes.map((m) => MODE_CONFIGS[m]?.emoji ?? m).join(' ')}
+          <View style={styles.cardFooter}>
+            <Text style={styles.categorySubtext}>
+              {catConfig.label}
             </Text>
-            <Text style={[styles.pointsBadge, isGoldCard && styles.goldPointsBadge]}>
-              {(() => {
-                const pts = INTENSITY_POINTS[item.intensity as IntensityLevel] ?? item.intensity;
-                return `⭐ +${pts} Pt${pts > 1 ? 's' : ''}`;
-              })()}
+            <Text style={styles.playersBadge}>
+              👥 {item.minPlayers}+
             </Text>
           </View>
         </View>
@@ -167,7 +121,7 @@ export default function CardsGalleryScreen() {
 
             <Text style={styles.title}>Galerie des Cartes 🃏</Text>
             <Text style={styles.subtitle}>
-              Explorez l'ensemble des {questions.length} cartes du jeu par mode, intensité ou mot-clé.
+              Explorez les {questions.length} cartes du jeu classées par thématique ou recherchez par mot-clé.
             </Text>
 
             {/* Champ de recherche */}
@@ -175,7 +129,7 @@ export default function CardsGalleryScreen() {
               <Text style={styles.searchIcon}>🔍</Text>
               <TextInput
                 style={styles.searchInput}
-                placeholder="Rechercher une question ou mot-clé..."
+                placeholder="Rechercher une question ou un thème..."
                 placeholderTextColor={colors.textSecondary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -187,59 +141,36 @@ export default function CardsGalleryScreen() {
               )}
             </View>
 
-            {/* Filtre par Mode */}
+            {/* Filtre par Catégorie */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
               <TouchableOpacity
-                onPress={() => setSelectedMode('all')}
-                style={[styles.filterChip, selectedMode === 'all' && styles.filterChipActive]}
+                onPress={() => setSelectedCategory('all')}
+                style={[styles.filterChip, selectedCategory === 'all' && styles.filterChipActive]}
               >
-                <Text style={[styles.filterChipText, selectedMode === 'all' && styles.filterChipTextActive]}>
-                  Tous les modes
-                </Text>
-              </TouchableOpacity>
-              {(Object.keys(MODE_CONFIGS) as GameMode[]).map((modeId) => {
-                const config = MODE_CONFIGS[modeId];
-                const isActive = selectedMode === modeId;
-                return (
-                  <TouchableOpacity
-                    key={modeId}
-                    onPress={() => setSelectedMode(modeId)}
-                    style={[styles.filterChip, isActive && styles.filterChipActive]}
-                  >
-                    <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
-                      {config.emoji} {config.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-
-            {/* Filtre par Intensité */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
-              <TouchableOpacity
-                onPress={() => setSelectedIntensity('all')}
-                style={[styles.filterChip, selectedIntensity === 'all' && styles.filterChipActive]}
-              >
-                <Text style={[styles.filterChipText, selectedIntensity === 'all' && styles.filterChipTextActive]}>
-                  Toutes intensités
+                <Text style={[styles.filterChipText, selectedCategory === 'all' && styles.filterChipTextActive]}>
+                  Toutes ({questions.length})
                 </Text>
               </TouchableOpacity>
 
-              {([1, 2, 3, 4, 5, 6] as IntensityLevel[]).map((lvl) => {
-                const config = INTENSITY_CONFIGS[lvl];
-                const isActive = selectedIntensity === lvl;
+              {allCategories.map((catId) => {
+                const config = CATEGORY_CONFIGS[catId];
+                const isActive = selectedCategory === catId;
+                const catCount = questions.filter((q) => q.category === catId).length;
+
                 return (
                   <TouchableOpacity
-                    key={lvl}
-                    onPress={() => setSelectedIntensity(lvl)}
+                    key={catId}
+                    onPress={() => setSelectedCategory(catId)}
                     style={[
                       styles.filterChip,
-                      isActive && styles.filterChipActive,
-                      lvl === 6 && styles.goldFilterChip,
+                      isActive && {
+                        borderColor: config.color,
+                        backgroundColor: config.badgeBg,
+                      },
                     ]}
                   >
-                    <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive, lvl === 6 && styles.goldFilterChipText]}>
-                      {config.emoji} Niv.{lvl}
+                    <Text style={[styles.filterChipText, isActive && { color: config.color, fontWeight: '700' }]}>
+                      {config.emoji} {config.label} ({catCount})
                     </Text>
                   </TouchableOpacity>
                 );
@@ -247,54 +178,51 @@ export default function CardsGalleryScreen() {
             </ScrollView>
           </View>
         }
-        contentContainerStyle={styles.gridContent}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyEmoji}>🔍</Text>
-            <Text style={styles.emptyTitle}>Aucune carte trouvée</Text>
-            <Text style={styles.emptySubtitle}>
-              Essayez de modifier vos filtres ou votre recherche textuelle.
-            </Text>
-          </View>
-        }
       />
     </ScreenContainer>
   );
 }
 
+// ─── STYLES ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+  listContent: {
+    paddingBottom: spacing.xxl,
+  },
   header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    gap: spacing.xs,
-    width: '100%',
-    maxWidth: 1400,
-    alignSelf: 'center',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
   },
   headerTop: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.xs,
+    alignItems: 'center',
   },
   backButton: {
     paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
   },
   backText: {
-    fontSize: typography.sizes.md,
-    color: colors.accent,
-    fontWeight: typography.weights.medium,
+    color: colors.textPrimary,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
   },
   countBadge: {
     fontSize: typography.sizes.xs,
     color: colors.textSecondary,
-    backgroundColor: colors.surfaceBorder,
-    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surfaceElevated,
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radii.full,
-    fontWeight: typography.weights.bold,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
   },
   title: {
     fontSize: typography.sizes.xxl,
@@ -303,56 +231,53 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: typography.sizes.md,
+    fontSize: typography.sizes.sm,
     color: colors.textSecondary,
+    lineHeight: typography.sizes.sm * 1.4,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
     paddingHorizontal: spacing.md,
-    marginVertical: spacing.xs,
+    paddingVertical: spacing.xs,
+    gap: spacing.sm,
   },
   searchIcon: {
-    fontSize: typography.sizes.md,
-    marginRight: spacing.xs,
+    fontSize: 16,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: spacing.sm,
     color: colors.textPrimary,
-    fontSize: typography.sizes.md,
+    fontSize: typography.sizes.sm,
+    paddingVertical: 8,
   },
   clearSearch: {
-    color: colors.textSecondary,
-    fontSize: typography.sizes.md,
+    color: colors.textTertiary,
+    fontSize: 14,
     padding: spacing.xs,
   },
   filterScroll: {
-    marginVertical: 2,
+    flexDirection: 'row',
+    marginHorizontal: -spacing.md,
+    paddingHorizontal: spacing.md,
+    marginVertical: 4,
   },
   filterChip: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: radii.full,
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
     marginRight: spacing.xs,
   },
   filterChipActive: {
-    backgroundColor: colors.accent,
     borderColor: colors.accent,
-  },
-  goldFilterChip: {
-    borderColor: '#FFD700',
-  },
-  goldFilterChipText: {
-    color: '#FFD700',
-    fontWeight: typography.weights.bold,
+    backgroundColor: colors.accentMuted,
   },
   filterChipText: {
     fontSize: typography.sizes.xs,
@@ -360,132 +285,72 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.medium,
   },
   filterChipTextActive: {
-    color: colors.textPrimary,
+    color: colors.accentLight,
     fontWeight: typography.weights.bold,
-  },
-  gridContent: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
-    maxWidth: 1400,
-    width: '100%',
-    alignSelf: 'center',
   },
   cardContainer: {
     padding: spacing.xs,
   },
   miniCard: {
     backgroundColor: colors.surfaceElevated,
-    borderRadius: radii.xl,
+    borderRadius: radii.lg,
     borderWidth: 1.5,
     padding: spacing.md,
-    height: 220,
+    minHeight: 170,
     justifyContent: 'space-between',
     position: 'relative',
     overflow: 'hidden',
     ...shadows.sm,
   },
-  goldMiniCard: {
-    backgroundColor: '#FFD700',
-    borderColor: '#B38F00',
-  },
   cornerMotif: {
     position: 'absolute',
-    fontSize: 9,
-    color: 'rgba(255, 255, 255, 0.08)',
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    fontSize: 8,
+    color: 'rgba(255, 255, 255, 0.1)',
   },
-  goldMotif: {
-    color: 'rgba(0, 0, 0, 0.25)',
-  },
-  topLeft: {
-    top: 6,
-    left: 8,
-  },
-  topRight: {
-    top: 6,
-    right: 8,
-  },
+  topLeft: { top: 6, left: 8 },
+  topRight: { top: 6, right: 8 },
   badgeRow: {
     flexDirection: 'row',
-    gap: 4,
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
   },
-  badge: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.xs + 2,
-    paddingVertical: 2,
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
   },
-  goldBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    borderColor: '#000000',
-  },
-  goldBadgeText: {
-    color: '#000000',
-  },
-  intensityBadge: {
-    backgroundColor: colors.accentMuted,
-  },
-  badgeText: {
+  categoryBadgeText: {
     fontSize: 10,
     fontWeight: typography.weights.bold,
-    color: colors.textPrimary,
   },
-  questionText: {
+  idBadge: {
+    fontSize: 10,
+    color: colors.textTertiary,
+    fontFamily: 'monospace',
+  },
+  questionSnippet: {
     fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.bold,
     color: colors.textPrimary,
-    lineHeight: typography.sizes.sm * 1.35,
+    lineHeight: 20,
+    fontWeight: typography.weights.medium,
     marginVertical: spacing.xs,
-  },
-  goldQuestionText: {
-    color: '#0B0C10',
   },
   cardFooter: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: colors.surfaceBorder,
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
     paddingTop: spacing.xs,
   },
-  goldCardFooter: {
-    borderTopColor: 'rgba(0, 0, 0, 0.2)',
+  categorySubtext: {
+    fontSize: 10,
+    color: colors.textTertiary,
   },
-  modesLabel: {
-    fontSize: 11,
-    color: colors.textSecondary,
-  },
-  goldModesLabel: {
-    color: 'rgba(0, 0, 0, 0.7)',
-  },
-  pointsBadge: {
-    fontSize: 11,
-    fontWeight: typography.weights.heavy,
-    color: '#FFD60A',
-  },
-  goldPointsBadge: {
-    color: '#000000',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.xxl,
-    gap: spacing.xs,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-  },
-  emptyTitle: {
-    fontSize: typography.sizes.lg,
-    fontWeight: typography.weights.bold,
-    color: colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: typography.sizes.md,
-    color: colors.textSecondary,
+  playersBadge: {
+    fontSize: 10,
+    color: colors.textTertiary,
   },
 });

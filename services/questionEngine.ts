@@ -1,100 +1,118 @@
 // services/questionEngine.ts
-// Algorithme de filtrage, sélection des questions et substitution dynamique des prénoms
+// Algorithme de filtrage, sélection des questions par Catégorie et substitution dynamique des prénoms
 
 import { questions } from '../data/questions';
-import type { GameMode, IntensityLevel } from '../types/game';
-import type { Question, QuestionCategory } from '../types/question';
+import type { GameMode, IntensityLevel, QuestionCategory } from '../types/game';
+import type { Question } from '../types/question';
+import { tinderSortService } from './tinderSortService';
 
 export interface QuestionEngineFilter {
-  mode: GameMode;
-  intensity: IntensityLevel;
+  categories?: QuestionCategory[];
   playerCount: number;
   seenQuestionIds: string[];
   lastCategory?: QuestionCategory | null;
+  excludedQuestionIds?: string[];
+  // Rétrocompatibilité
+  mode?: GameMode;
+  intensity?: IntensityLevel;
 }
 
+// Cache local des cartes exclues (synchronisé automatiquement)
+let cachedExcludedIds: string[] = [];
+
+// Initialisation asynchrone et écoute des changements
+tinderSortService.getExcludedIds().then((ids) => {
+  cachedExcludedIds = ids;
+});
+
+tinderSortService.subscribe((state) => {
+  cachedExcludedIds = state.rejectedIds;
+});
+
 export const questionEngine = {
+  /**
+   * Retourne la liste des IDs actuellement exclus du jeu
+   */
+  getExcludedIds(): string[] {
+    return cachedExcludedIds;
+  },
+
+  /**
+   * Force la mise à jour des IDs exclus
+   */
+  async reloadExcludedIds(): Promise<string[]> {
+    cachedExcludedIds = await tinderSortService.getExcludedIds();
+    return cachedExcludedIds;
+  },
+
   /**
    * Récupère toutes les questions éligibles selon les critères
    */
   getEligibleQuestions({
-    mode,
-    intensity,
+    categories,
     playerCount,
     seenQuestionIds,
+    excludedQuestionIds,
+    mode,
   }: QuestionEngineFilter): Question[] {
+    const effectiveExcluded = excludedQuestionIds ?? cachedExcludedIds;
+    const seenSet = new Set(seenQuestionIds);
+    const excludedSet = new Set(effectiveExcluded);
+    const categorySet = categories && categories.length > 0 ? new Set(categories) : null;
+
     return questions.filter((q) => {
-      // 1. Filtrer par mode
-      const matchMode = q.modes.includes(mode);
-      if (!matchMode) return false;
+      // 1. Filtrer par catégories choisies
+      if (categorySet) {
+        if (!categorySet.has(q.category)) return false;
+      } else if (mode && q.modes) {
+        if (!q.modes.includes(mode)) return false;
+      }
 
-      // 2. Filtrer par intensité (questions d'intensité <= intensité sélectionnée)
-      const matchIntensity = q.intensity <= intensity;
-      if (!matchIntensity) return false;
+      // 2. Filtrer par nombre de joueurs
+      if (playerCount < q.minPlayers || (q.maxPlayers && playerCount > q.maxPlayers)) {
+        return false;
+      }
 
-      // 3. Filtrer par nombre de joueurs
-      const matchMinPlayers = playerCount >= q.minPlayers;
-      const matchMaxPlayers = q.maxPlayers ? playerCount <= q.maxPlayers : true;
-      if (!matchMinPlayers || !matchMaxPlayers) return false;
+      // 3. Exclure les questions déjà vues dans cette session
+      if (seenSet.has(q.id)) return false;
 
-      // 4. Exclure les questions déjà vues dans cette session
-      const notSeen = !seenQuestionIds.includes(q.id);
+      // 4. Exclure automatiquement les questions jetées (bannies via le tri Tinder)
+      if (excludedSet.has(q.id)) return false;
 
-      return notSeen;
+      return true;
     });
   },
 
   /**
-   * Sélectionne la prochaine question avec ~18% de chance d'apparition d'une Carte Extrême Dorée Surprise (Niveau 6 💀)
+   * Sélectionne la prochaine question avec alternance intelligente des catégories
    */
   getNextQuestion(filter: QuestionEngineFilter): Question | null {
-    // ~18% de chance qu'une Carte Extrême Dorée Surprise (Niveau 6 💀) apparaisse pendant la partie
-    const isSurpriseGold = Math.random() < 0.18;
-
-    if (isSurpriseGold && filter.intensity < 6) {
-      const goldQuestions = questions.filter(
-        (q) =>
-          q.intensity === 6 &&
-          q.modes.includes(filter.mode) &&
-          !filter.seenQuestionIds.includes(q.id)
-      );
-      if (goldQuestions.length > 0) {
-        const randomIndex = Math.floor(Math.random() * goldQuestions.length);
-        const picked = goldQuestions[randomIndex];
-        // Marquer comme vue pour qu'elle ne réapparaisse pas
-        filter.seenQuestionIds.push(picked.id);
-        return picked;
-      }
-    }
-
+    const effectiveExcluded = filter.excludedQuestionIds ?? cachedExcludedIds;
     const eligible = this.getEligibleQuestions(filter);
 
     if (eligible.length === 0) {
-      // Fallback si toutes les questions éligibles de l'intensité ont été vues :
-      // rester impérativement dans le mode de jeu choisi
-      const fallback = questions.filter(
-        (q) => q.modes.includes(filter.mode) && !filter.seenQuestionIds.includes(q.id)
-      );
-      if (fallback.length > 0) {
-        return fallback[Math.floor(Math.random() * fallback.length)];
-      }
-      return null;
+      // Fallback si toutes les questions ont été vues : rester dans les catégories choisies
+      const excludedSet = new Set(effectiveExcluded);
+      const seenSet = new Set(filter.seenQuestionIds);
+      const categorySet = filter.categories && filter.categories.length > 0 ? new Set(filter.categories) : null;
+
+      const fallback = questions.filter((q) => {
+        const matchCat = categorySet ? categorySet.has(q.category) : true;
+        return matchCat && !seenSet.has(q.id) && !excludedSet.has(q.id);
+      });
+      return fallback.length > 0 ? fallback[Math.floor(Math.random() * fallback.length)] : null;
     }
 
-    // Tenter d'abord de trouver des questions d'une catégorie différente de la précédente
-    if (filter.lastCategory) {
-      const differentCategoryQuestions = eligible.filter(
-        (q) => q.category !== filter.lastCategory
-      );
+    // Tenter d'abord de trouver des questions d'une catégorie différente de la précédente pour varier le rythme
+    if (filter.lastCategory && filter.categories && filter.categories.length > 1) {
+      const differentCategoryQuestions = eligible.filter((q) => q.category !== filter.lastCategory);
       if (differentCategoryQuestions.length > 0) {
-        const randomIndex = Math.floor(Math.random() * differentCategoryQuestions.length);
-        return differentCategoryQuestions[randomIndex];
+        return differentCategoryQuestions[Math.floor(Math.random() * differentCategoryQuestions.length)];
       }
     }
 
-    // Sinon, prendre n'importe quelle question éligible
-    const randomIndex = Math.floor(Math.random() * eligible.length);
-    return eligible[randomIndex];
+    // Sinon, piocher n'importe quelle question éligible
+    return eligible[Math.floor(Math.random() * eligible.length)];
   },
 
   /**
@@ -123,22 +141,25 @@ export const questionEngine = {
     formatted = formatted.replace(/{player1}/g, mainPlayer);
 
     // Tirer au sort un autre joueur de la liste
-    const otherPlayers = allPlayers
-      ?.map((p) => p.name.trim())
-      .filter((name) => name && name.toLowerCase() !== mainPlayer.toLowerCase()) ?? [];
+    const otherPlayers =
+      allPlayers
+        ?.map((p) => p.name.trim())
+        .filter((name) => name && name.toLowerCase() !== mainPlayer.toLowerCase()) ?? [];
 
-    const otherPlayer1 = otherPlayers.length > 0
-      ? otherPlayers[Math.floor(Math.random() * otherPlayers.length)]
-      : 'un(e) ami(e)';
+    const otherPlayer1 =
+      otherPlayers.length > 0
+        ? otherPlayers[Math.floor(Math.random() * otherPlayers.length)]
+        : 'un(e) ami(e)';
 
     formatted = formatted.replace(/{otherPlayer}/g, otherPlayer1);
     formatted = formatted.replace(/{player2}/g, otherPlayer1);
 
     // Tirer au sort un 3ème joueur si nécessaire
     const remainingPlayers = otherPlayers.filter((name) => name !== otherPlayer1);
-    const otherPlayer2 = remainingPlayers.length > 0
-      ? remainingPlayers[Math.floor(Math.random() * remainingPlayers.length)]
-      : 'quelqu\'un d\'autre';
+    const otherPlayer2 =
+      remainingPlayers.length > 0
+        ? remainingPlayers[Math.floor(Math.random() * remainingPlayers.length)]
+        : "quelqu'un d'autre";
 
     formatted = formatted.replace(/{player3}/g, otherPlayer2);
 

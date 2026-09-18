@@ -14,7 +14,7 @@ interface ModeCardProps {
 
 export function ModeCard({ config, isSelected, onPress }: ModeCardProps) {
   const scale = useRef(new Animated.Value(1)).current;
-  const modeColor = colors.modes[config.id];
+  const modeColor = colors.modes[config.id as keyof typeof colors.modes];
 
   const handlePressIn = () => {
     Animated.spring(scale, {
