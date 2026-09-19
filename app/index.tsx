@@ -1,5 +1,5 @@
 // app/index.tsx
-// Écran d'accueil moderne, aéré et élégant pour Dit-Paulo ?
+// Écran d'accueil chaleureux, friendly et moderne pour Dit-Paulo ?
 
 import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -47,15 +47,16 @@ export default function HomeScreen() {
     };
   }, []);
 
-  // Animation d'entrée
+  // Animation d'entrée douce
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 550,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
@@ -64,12 +65,31 @@ export default function HomeScreen() {
         useNativeDriver: true,
       }),
     ]).start();
+
+    // Légère pulsation accueillante sur le bouton principal
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.02,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseLoop.start();
+
+    return () => pulseLoop.stop();
   }, []);
 
   const handleConfirmReset = async () => {
     await resetSeenQuestions();
     setShowResetModal(false);
-    setToastMessage('✅ Pioche remise à zéro (0 carte vue) !');
+    setToastMessage('✨ Le paquet a été rebattu ! Toutes les cartes sont prêtes.');
     setTimeout(() => {
       setToastMessage(null);
     }, 3000);
@@ -84,7 +104,7 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Toast de confirmation */}
+        {/* Toast amical de confirmation */}
         {toastMessage && (
           <View style={styles.toastContainer}>
             <Text style={styles.toastText}>{toastMessage}</Text>
@@ -100,11 +120,11 @@ export default function HomeScreen() {
             },
           ]}
         >
-          {/* ─── Hero Header ─────────────────────────────────────────────── */}
+          {/* ─── Hero Header Chaleureux ──────────────────────────────────── */}
           <View style={styles.hero}>
             <View style={[styles.badgePill, { backgroundColor: theme.colors.accentMuted, borderColor: theme.colors.accent }]}>
               <Text style={[styles.badgePillText, { color: theme.colors.accentLight }]}>
-                ✨ JEU DE CARTES & CONVERSATIONS
+                👋 BIENVENUE SUR DIT-PAULO !
               </Text>
             </View>
 
@@ -114,36 +134,42 @@ export default function HomeScreen() {
 
             <Text style={styles.title}>Dit-Paulo ?</Text>
             <Text style={styles.tagline}>
-              Les meilleures conversations commencent souvent par une question.
+              Le jeu convivial pour briser la glace, rire et partager de vraies conversations ✨
             </Text>
           </View>
 
-          {/* ─── Bouton Principal COMMENCER ─────────────────────────────── */}
-          <TouchableOpacity
-            onPress={() => router.push('/setup/categories')}
-            style={[
-              styles.startMainCard,
-              {
-                backgroundColor: theme.colors.accent,
-                shadowColor: theme.colors.accent,
-              },
-            ]}
-            activeOpacity={0.88}
-            accessibilityLabel="Commencer une nouvelle partie"
-          >
-            <View style={styles.startCardLeft}>
-              <Text style={styles.startCardIcon}>🎮</Text>
-              <View>
-                <Text style={styles.startCardTitle}>COMMENCER UNE PARTIE</Text>
-                <Text style={styles.startCardSubtitle}>
-                  {state.selectedCategories.length} catégories sélectionnées • Prêt à jouer
-                </Text>
+          {/* ─── Bouton Principal Lancer la partie ──────────────────────── */}
+          <Animated.View style={{ transform: [{ scale: pulseAnim }], width: '100%' }}>
+            <TouchableOpacity
+              onPress={() => router.push('/setup/categories')}
+              style={[
+                styles.startMainCard,
+                {
+                  backgroundColor: theme.colors.accent,
+                  shadowColor: theme.colors.accent,
+                },
+              ]}
+              activeOpacity={0.88}
+              accessibilityLabel="Lancer une nouvelle partie"
+            >
+              <View style={styles.startCardLeft}>
+                <View style={styles.startIconCircle}>
+                  <Text style={styles.startCardIcon}>🚀</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.startCardTitle}>LANCER UNE PARTIE</Text>
+                  <Text style={styles.startCardSubtitle}>
+                    {state.selectedCategories.length} thèmes prêts • En famille, potes ou couple
+                  </Text>
+                </View>
               </View>
-            </View>
-            <Text style={styles.startCardArrow}>➔</Text>
-          </TouchableOpacity>
+              <View style={styles.arrowCircle}>
+                <Text style={styles.startCardArrow}>➔</Text>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
 
-          {/* ─── Grille 2x2 : Cartes & Outils ────────────────────────────── */}
+          {/* ─── Grille 2x2 : Explorer & Outils ───────────────────────────── */}
           <View style={styles.sectionHeaderWrap}>
             <Text style={styles.sectionHeaderTitle}>EXPLORER & PERSONNALISER</Text>
           </View>
@@ -155,9 +181,11 @@ export default function HomeScreen() {
               style={styles.gridCard}
               activeOpacity={0.8}
             >
-              <Text style={styles.gridCardEmoji}>🃏</Text>
+              <View style={[styles.gridIconCircle, { backgroundColor: 'rgba(255, 140, 66, 0.15)' }]}>
+                <Text style={styles.gridCardEmoji}>🃏</Text>
+              </View>
               <Text style={styles.gridCardTitle}>Galerie des Cartes</Text>
-              <Text style={styles.gridCardDesc}>{questions.length} cartes au total</Text>
+              <Text style={styles.gridCardDesc}>{questions.length} questions prêtes</Text>
             </TouchableOpacity>
 
             {/* Mes Cartes */}
@@ -165,14 +193,16 @@ export default function HomeScreen() {
               onPress={() => router.push('/custom-cards')}
               style={[
                 styles.gridCard,
-                { borderColor: 'rgba(255, 215, 0, 0.4)', backgroundColor: 'rgba(255, 215, 0, 0.06)' },
+                { borderColor: 'rgba(255, 215, 0, 0.4)', backgroundColor: 'rgba(255, 215, 0, 0.05)' },
               ]}
               activeOpacity={0.8}
             >
-              <Text style={styles.gridCardEmoji}>⭐</Text>
+              <View style={[styles.gridIconCircle, { backgroundColor: 'rgba(255, 215, 0, 0.15)' }]}>
+                <Text style={styles.gridCardEmoji}>⭐</Text>
+              </View>
               <Text style={[styles.gridCardTitle, { color: '#FFD700' }]}>Mes Cartes</Text>
               <Text style={styles.gridCardDesc}>
-                {customCardsCount > 0 ? `${customCardsCount} carte${customCardsCount > 1 ? 's' : ''} créées` : 'Créer mes cartes'}
+                {customCardsCount > 0 ? `${customCardsCount} carte${customCardsCount > 1 ? 's' : ''} créées` : 'Ajoute tes questions'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -183,14 +213,16 @@ export default function HomeScreen() {
               onPress={() => router.push('/tinder-sort')}
               style={[
                 styles.gridCard,
-                { borderColor: 'rgba(255, 45, 85, 0.4)', backgroundColor: 'rgba(255, 45, 85, 0.06)' },
+                { borderColor: 'rgba(255, 45, 85, 0.4)', backgroundColor: 'rgba(255, 45, 85, 0.05)' },
               ]}
               activeOpacity={0.8}
             >
-              <Text style={styles.gridCardEmoji}>🔥</Text>
-              <Text style={[styles.gridCardTitle, { color: '#FF2D55' }]}>Tri Tinder</Text>
+              <View style={[styles.gridIconCircle, { backgroundColor: 'rgba(255, 45, 85, 0.15)' }]}>
+                <Text style={styles.gridCardEmoji}>🔥</Text>
+              </View>
+              <Text style={[styles.gridCardTitle, { color: '#FF2D55' }]}>Tri des Cartes</Text>
               <Text style={styles.gridCardDesc}>
-                {totalSorted > 0 ? `${totalSorted} triées (${tinderStats.rejected} exclues)` : 'Trier les questions'}
+                {totalSorted > 0 ? `${totalSorted} triées (${tinderStats.rejected} exclues)` : 'Swipe pour filtrer'}
               </Text>
             </TouchableOpacity>
 
@@ -200,15 +232,17 @@ export default function HomeScreen() {
               style={styles.gridCard}
               activeOpacity={0.8}
             >
-              <Text style={styles.gridCardEmoji}>📋</Text>
+              <View style={[styles.gridIconCircle, { backgroundColor: 'rgba(100, 210, 255, 0.15)' }]}>
+                <Text style={styles.gridCardEmoji}>📋</Text>
+              </View>
               <Text style={styles.gridCardTitle}>Toutes les Questions</Text>
-              <Text style={styles.gridCardDesc}>Vue par thématiques</Text>
+              <Text style={styles.gridCardDesc}>Vue détaillée par thème</Text>
             </TouchableOpacity>
           </View>
 
-          {/* ─── Navigation : Favoris & Paramètres ──────────────────────── */}
+          {/* ─── Préférences & Ambiance ──────────────────────────────────── */}
           <View style={styles.sectionHeaderWrap}>
-            <Text style={styles.sectionHeaderTitle}>PREFERENCES & THEMES</Text>
+            <Text style={styles.sectionHeaderTitle}>RÉGLAGES & STYLE</Text>
           </View>
 
           <View style={styles.gridRow}>
@@ -218,7 +252,7 @@ export default function HomeScreen() {
               activeOpacity={0.8}
             >
               <Text style={styles.actionPillEmoji}>❤️</Text>
-              <Text style={styles.actionPillTitle}>Favoris</Text>
+              <Text style={styles.actionPillTitle}>Mes Coups de Cœur</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -226,20 +260,23 @@ export default function HomeScreen() {
               style={styles.actionPillCard}
               activeOpacity={0.8}
             >
-              <Text style={styles.actionPillEmoji}>⚙️</Text>
-              <Text style={styles.actionPillTitle}>Paramètres & Thème ({theme.name.split(' ')[0]})</Text>
+              <Text style={styles.actionPillEmoji}>🎨</Text>
+              <Text style={styles.actionPillTitle}>Thèmes ({theme.name.split(' ')[0]})</Text>
             </TouchableOpacity>
           </View>
 
-          {/* ─── Statut Pioche & Reset ─────────────────────────────────── */}
+          {/* ─── État du Paquet de Cartes ────────────────────────────────── */}
           <View style={styles.statsCard}>
             <View style={styles.statsHeaderRow}>
               <View style={styles.statsHeaderLeft}>
                 <Text style={styles.statsIcon}>🎴</Text>
-                <Text style={styles.statsTitle}>État de la Pioche</Text>
+                <View>
+                  <Text style={styles.statsTitle}>Progression de la Pioche</Text>
+                  <Text style={styles.statsSubtitle}>Découvre de nouvelles questions à chaque tour</Text>
+                </View>
               </View>
               <Text style={[styles.statsRatio, { color: theme.colors.accentLight }]}>
-                {seenCount} / {questions.length} cartes vues ({seenPercentage}%)
+                {seenCount} / {questions.length} ({seenPercentage}%)
               </Text>
             </View>
 
@@ -262,15 +299,15 @@ export default function HomeScreen() {
                 style={styles.resetBtn}
                 activeOpacity={0.75}
               >
-                <Text style={styles.resetBtnText}>🔄 Remettre la pioche à zéro</Text>
+                <Text style={styles.resetBtnText}>🔄 Rebattre les cartes (repartir de 0)</Text>
               </TouchableOpacity>
             ) : (
-              <Text style={styles.freshDeckText}>✨ Toutes les questions sont disponibles dans la pioche.</Text>
+              <Text style={styles.freshDeckText}>✨ Le paquet est tout frais, toutes les cartes sont prêtes !</Text>
             )}
           </View>
         </Animated.View>
 
-        {/* Modal de confirmation : Repartir de 0 */}
+        {/* Modal chaleureuse : Rebattre les cartes */}
         <Modal
           visible={showResetModal}
           transparent
@@ -279,27 +316,29 @@ export default function HomeScreen() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalCard}>
-              <Text style={styles.modalEmoji}>🔄</Text>
-              <Text style={styles.modalTitle}>Repartir de 0 ?</Text>
+              <View style={styles.modalIconCircle}>
+                <Text style={styles.modalEmoji}>🔄</Text>
+              </View>
+              <Text style={styles.modalTitle}>Rebattre le paquet ?</Text>
               <Text style={styles.modalMessage}>
                 {seenCount > 0
-                  ? `Tu as déjà joué ${seenCount} question${seenCount > 1 ? 's' : ''} sur ${questions.length}.\n\nEn réinitialisant, toutes les cartes redeviendront piochables immédiatement.`
-                  : `Toutes les questions sont déjà disponibles.\n\nVeux-tu réinitialiser quand même ?`}
+                  ? `Vous avez déjà découvert ${seenCount} question${seenCount > 1 ? 's' : ''} sur ${questions.length}.\n\nEn remettant à zéro, toutes les cartes redeviendront piochables immédiatement pour une nouvelle session !`
+                  : `Toutes les questions sont déjà prêtes dans la pioche.\n\nVeux-tu réinitialiser quand même ?`}
               </Text>
 
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   onPress={handleConfirmReset}
-                  style={[styles.modalActionBtn, { backgroundColor: colors.danger }]}
+                  style={[styles.modalActionBtn, { backgroundColor: theme.colors.accent }]}
                 >
-                  <Text style={styles.modalActionBtnText}>Oui, remettre à 0</Text>
+                  <Text style={styles.modalActionBtnText}>Oui, rebattre le paquet ✨</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => setShowResetModal(false)}
                   style={[styles.modalActionBtn, styles.modalCancelBtn]}
                 >
-                  <Text style={[styles.modalActionBtnText, { color: colors.textSecondary }]}>Annuler</Text>
+                  <Text style={styles.modalCancelBtnText}>Annuler</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -310,50 +349,65 @@ export default function HomeScreen() {
   );
 }
 
+// ─── STYLES ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxxl,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl + 40,
+    alignItems: 'center',
   },
   mainWrapper: {
     width: '100%',
-    maxWidth: 580,
+    maxWidth: 620,
+  },
+  toastContainer: {
+    position: 'absolute',
+    top: 10,
     alignSelf: 'center',
-    gap: spacing.lg,
+    backgroundColor: 'rgba(28, 28, 30, 0.95)',
+    borderColor: colors.success,
+    borderWidth: 1.5,
+    borderRadius: radii.full,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    zIndex: 999,
+    ...shadows.md,
+  },
+  toastText: {
+    color: colors.textPrimary,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
   },
   hero: {
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.lg,
   },
   badgePill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 4,
-    borderRadius: radii.full,
     borderWidth: 1,
-    marginBottom: spacing.xs,
+    borderRadius: radii.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 5,
+    marginBottom: spacing.md,
   },
   badgePillText: {
-    fontSize: 10,
+    fontSize: typography.sizes.xs,
     fontWeight: typography.weights.bold,
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
   logoCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.surfaceElevated,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.lg,
-    elevation: 8,
-    marginBottom: 4,
+    marginBottom: spacing.md,
+    ...shadows.md,
   },
   logoEmoji: {
-    fontSize: 40,
+    fontSize: 42,
   },
   title: {
     fontSize: 34,
@@ -366,16 +420,18 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: typography.sizes.sm * 1.45,
-    maxWidth: 340,
+    maxWidth: 380,
+    lineHeight: 22,
+    marginTop: spacing.xs,
   },
   startMainCard: {
-    borderRadius: radii.xxl,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderRadius: radii.xl,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
     ...shadows.lg,
     elevation: 8,
   },
@@ -385,122 +441,156 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     flex: 1,
   },
+  startIconCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   startCardIcon: {
-    fontSize: 32,
+    fontSize: 24,
   },
   startCardTitle: {
     fontSize: typography.sizes.lg,
     fontWeight: typography.weights.heavy,
-    color: colors.textPrimary,
-    letterSpacing: 0.3,
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   startCardSubtitle: {
     fontSize: typography.sizes.xs,
     color: 'rgba(255, 255, 255, 0.85)',
     marginTop: 2,
+    fontWeight: typography.weights.medium,
+  },
+  arrowCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.sm,
   },
   startCardArrow: {
-    fontSize: 22,
-    color: colors.textPrimary,
+    fontSize: 18,
+    color: '#FFFFFF',
     fontWeight: typography.weights.bold,
   },
   sectionHeaderWrap: {
+    marginBottom: spacing.sm,
     marginTop: spacing.xs,
-    marginBottom: -spacing.xs,
   },
   sectionHeaderTitle: {
-    fontSize: 11,
+    fontSize: typography.sizes.xs,
     fontWeight: typography.weights.bold,
     color: colors.textTertiary,
     letterSpacing: 1.2,
-    marginLeft: 4,
   },
   gridRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
+    marginBottom: spacing.md,
+    width: '100%',
   },
   gridCard: {
     flex: 1,
-    backgroundColor: colors.surfaceElevated,
+    backgroundColor: colors.surface,
     borderRadius: radii.xl,
+    padding: spacing.md,
     borderWidth: 1.5,
     borderColor: colors.surfaceBorder,
-    padding: spacing.md,
-    gap: 4,
     ...shadows.sm,
   },
+  gridIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
   gridCardEmoji: {
-    fontSize: 26,
-    marginBottom: 2,
+    fontSize: 22,
   },
   gridCardTitle: {
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.bold,
     color: colors.textPrimary,
+    marginTop: spacing.xs,
   },
   gridCardDesc: {
-    fontSize: 11,
+    fontSize: typography.sizes.xs,
     color: colors.textSecondary,
+    marginTop: 2,
   },
   actionPillCard: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
-    paddingHorizontal: spacing.md,
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radii.full,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderWidth: 1.5,
+    borderColor: colors.surfaceBorder,
+    gap: spacing.sm,
+    ...shadows.sm,
   },
   actionPillEmoji: {
-    fontSize: 20,
+    fontSize: 18,
   },
   actionPillTitle: {
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.bold,
+    fontWeight: typography.weights.semibold,
     color: colors.textPrimary,
-    flex: 1,
   },
   statsCard: {
-    backgroundColor: colors.surfaceElevated,
+    backgroundColor: colors.surface,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    padding: spacing.lg,
+    borderWidth: 1.5,
     borderColor: colors.surfaceBorder,
-    padding: spacing.md,
-    gap: spacing.sm,
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
+    width: '100%',
+    ...shadows.sm,
   },
   statsHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
+    marginBottom: spacing.md,
   },
   statsHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.sm,
   },
   statsIcon: {
-    fontSize: 16,
+    fontSize: 24,
   },
   statsTitle: {
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.bold,
     color: colors.textPrimary,
   },
+  statsSubtitle: {
+    fontSize: 11,
+    color: colors.textTertiary,
+    marginTop: 1,
+  },
   statsRatio: {
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.semibold,
+    fontWeight: typography.weights.bold,
   },
   progressTrack: {
-    height: 6,
-    backgroundColor: colors.surfaceBorder,
+    height: 9,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: radii.full,
     overflow: 'hidden',
+    marginBottom: spacing.md,
   },
   progressFill: {
     height: '100%',
@@ -508,8 +598,12 @@ const styles = StyleSheet.create({
   },
   resetBtn: {
     alignSelf: 'center',
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
+    borderRadius: radii.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
   },
   resetBtnText: {
     fontSize: typography.sizes.xs,
@@ -517,81 +611,79 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.semibold,
   },
   freshDeckText: {
-    fontSize: 11,
-    color: colors.textTertiary,
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
     textAlign: 'center',
-  },
-  toastContainer: {
-    position: 'absolute',
-    top: 20,
-    alignSelf: 'center',
-    zIndex: 999,
-    backgroundColor: colors.surfaceElevated,
-    borderColor: colors.success,
-    borderWidth: 1.5,
-    borderRadius: radii.full,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    ...shadows.lg,
-  },
-  toastText: {
-    color: colors.textPrimary,
-    fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.bold,
+    fontStyle: 'italic',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.82)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.lg,
   },
   modalCard: {
-    width: '100%',
-    maxWidth: 380,
     backgroundColor: colors.surfaceElevated,
     borderRadius: radii.xxl,
+    padding: spacing.xl,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
     borderWidth: 1.5,
     borderColor: colors.surfaceBorder,
-    padding: spacing.xl,
-    alignItems: 'center',
-    gap: spacing.md,
     ...shadows.lg,
   },
+  modalIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
   modalEmoji: {
-    fontSize: 48,
+    fontSize: 28,
   },
   modalTitle: {
-    fontSize: typography.sizes.xl,
+    fontSize: typography.sizes.lg,
     fontWeight: typography.weights.heavy,
     color: colors.textPrimary,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   modalMessage: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: typography.sizes.sm * 1.5,
+    lineHeight: 21,
+    marginBottom: spacing.xl,
   },
   modalActions: {
     width: '100%',
     gap: spacing.sm,
-    marginTop: spacing.sm,
   },
   modalActionBtn: {
     width: '100%',
+    borderRadius: radii.full,
     paddingVertical: spacing.md,
-    borderRadius: radii.lg,
     alignItems: 'center',
-  },
-  modalCancelBtn: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    justifyContent: 'center',
   },
   modalActionBtnText: {
-    fontSize: typography.sizes.md,
+    fontSize: typography.sizes.sm,
     fontWeight: typography.weights.bold,
-    color: colors.textPrimary,
+    color: '#FFFFFF',
+  },
+  modalCancelBtn: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: colors.surfaceBorder,
+  },
+  modalCancelBtnText: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.textSecondary,
   },
 });

@@ -264,15 +264,15 @@ export default function GameScreen() {
 
   return (
     <ScreenContainer>
-      {/* Barre supérieure */}
+      {/* Barre supérieure conviviale */}
       <View style={[styles.topBar, !isDesktop && styles.topBarMobile]}>
         <TouchableOpacity
           onPress={handleQuit}
           style={styles.quitButton}
-          accessibilityLabel="Quitter la partie"
+          accessibilityLabel="Quitter la partie et revenir à l'accueil"
         >
           <Text style={[styles.quitText, !isDesktop && styles.quitTextMobile]}>
-            {isDesktop ? '✕ Quitter' : '✕'}
+            {isDesktop ? '🏠 Accueil' : '🏠'}
           </Text>
         </TouchableOpacity>
 
@@ -283,7 +283,7 @@ export default function GameScreen() {
             accessibilityLabel="Finir la partie et afficher le podium des scores"
           >
             <Text style={[styles.finishText, !isDesktop && styles.finishTextMobile]}>
-              {isDesktop ? '🏁 Finir la partie' : '🏁 Finir'}
+              {isDesktop ? '🏁 Terminer la partie' : '🏁 Finir'}
             </Text>
           </TouchableOpacity>
         )}
@@ -346,7 +346,7 @@ export default function GameScreen() {
               accessibilityLabel={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             >
               <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
-                {isFavorite ? '❤️ Enregistré' : '🤍 Favori'}
+                {isFavorite ? '❤️ Coup de cœur' : '🤍 Favori'}
               </Text>
             </TouchableOpacity>
 
@@ -363,7 +363,7 @@ export default function GameScreen() {
                   accessibilityLabel="Joker Hasard : passer la carte à un joueur aléatoire (-10 Pts)"
                 >
                   <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
-                    🎰 Joker -10
+                    🎲 Hasard -10
                   </Text>
                 </TouchableOpacity>
 
@@ -378,7 +378,7 @@ export default function GameScreen() {
                   accessibilityLabel="Joker Victime : choisir qui répond à ta place (-15 Pts)"
                 >
                   <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
-                    😈 Joker -15
+                    🎯 Cible -15
                   </Text>
                 </TouchableOpacity>
               </>
@@ -390,7 +390,7 @@ export default function GameScreen() {
               accessibilityLabel="Finir la partie et voir le podium"
             >
               <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
-                {state.pointsEnabled ? '🏆 Podium' : '🏁 Bilan'}
+                {state.pointsEnabled ? '🏆 Scores' : '🏁 Bilan'}
               </Text>
             </TouchableOpacity>
 
@@ -433,27 +433,27 @@ export default function GameScreen() {
             </View>
           )}
 
-          {/* Boutons d'actions : Si points activés (Satisfaisant vs Insatisfaisant), sinon (Question suivante) */}
+          {/* Boutons d'actions bienveillants et conviviaux */}
           <View style={styles.footer}>
             {state.pointsEnabled ? (
               <View style={styles.voteButtonsContainer}>
                 <TouchableOpacity
                   onPress={handleNextQuestion}
                   style={[styles.voteButton, styles.satisfactoryButton]}
-                  accessibilityLabel="Valider la réponse satisfaisante (+1 Pt)"
+                  accessibilityLabel="Valider la réponse bien jouée (+1 Pt)"
                 >
                   <Text style={styles.voteButtonText}>
-                    {isDesktop ? 'SATISFAISANT 👍 (+1 Pt)' : '👍 +1 Pt'}
+                    {isDesktop ? '👏 BIEN JOUÉ ! (+1 Pt)' : '👏 Validé (+1)'}
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={handleUnsatisfactoryResponse}
                   style={[styles.voteButton, styles.unsatisfactoryButton]}
-                  accessibilityLabel="Réponse insatisfaisante ou langue de bois"
+                  accessibilityLabel="Langue de bois ou passe son tour"
                 >
                   <Text style={[styles.voteButtonText, styles.unsatisfactoryButtonText]}>
-                    {isDesktop ? 'INSATISFAISANT 👎 (+0 Pt)' : '👎 Passe'}
+                    {isDesktop ? '🙈 LANGUE DE BOIS (0 Pt)' : '🙈 Passe (0)'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -464,7 +464,7 @@ export default function GameScreen() {
                   style={[styles.voteButton, styles.satisfactoryButton, { flex: 2 }]}
                   accessibilityLabel="Passer à la question suivante"
                 >
-                  <Text style={styles.voteButtonText}>QUESTION SUIVANTE ➔</Text>
+                  <Text style={styles.voteButtonText}>✨ QUESTION SUIVANTE ➔</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleSkipQuestion}

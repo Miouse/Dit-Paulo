@@ -1,5 +1,5 @@
 // app/setup/players.tsx
-// Écran de configuration des joueurs (prénoms/pseudos)
+// Écran de configuration des joueurs — convivial, chaleureux et rapide
 
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -17,12 +17,14 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenContainer } from '../../components/ScreenContainer';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 import { useGame } from '../../context/GameContext';
+import { useTheme } from '../../context/ThemeContext';
 import { playersService } from '../../services/playersService';
 import { questionEngine } from '../../services/questionEngine';
 import type { Player } from '../../types/game';
 import { MAX_PLAYERS } from '../../types/game';
 
 export default function PlayersScreen() {
+  const { theme } = useTheme();
   const { setPlayers, state, setCurrentQuestion, markQuestionSeen } = useGame();
 
   // Initialiser avec les joueurs du context ou par défaut
@@ -117,19 +119,19 @@ export default function PlayersScreen() {
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* En-tête */}
+        {/* En-tête convivial */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
-            accessibilityLabel="Retour au choix du mode"
+            accessibilityLabel="Retour au choix des catégories"
           >
-            <Text style={styles.backText}>← Retour</Text>
+            <Text style={[styles.backText, { color: theme.colors.accentLight }]}>← Thèmes</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Qui joue ?</Text>
+          <Text style={styles.title}>Qui joue ce soir ? 👥</Text>
           <View style={styles.subtitleRow}>
-            <Text style={styles.subtitle}>Entrez les prénoms des participants (min 2)</Text>
+            <Text style={styles.subtitle}>Ajoute tes amis, ton crush ou ta famille (min 2)</Text>
             <View style={[
               styles.playerCount,
               players.length >= MAX_PLAYERS && styles.playerCountMax,
@@ -165,11 +167,12 @@ export default function PlayersScreen() {
           {players.length < MAX_PLAYERS ? (
             <TouchableOpacity
               onPress={handleAddPlayer}
-              style={styles.addButton}
+              style={[styles.addButton, { borderColor: theme.colors.accent }]}
+              activeOpacity={0.8}
               accessibilityLabel="Ajouter un joueur"
             >
-              <Text style={styles.addIcon}>＋</Text>
-              <Text style={styles.addText}>Ajouter un joueur</Text>
+              <Text style={[styles.addIcon, { color: theme.colors.accentLight }]}>＋</Text>
+              <Text style={[styles.addText, { color: theme.colors.accentLight }]}>Ajouter un(e) pote</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.maxReachedBanner}>
@@ -183,18 +186,19 @@ export default function PlayersScreen() {
           <TouchableOpacity
             onPress={handleSaveExplicit}
             style={[styles.saveButton, saveFeedback && styles.saveButtonActive]}
-            accessibilityLabel="Enregistrer la liste des prénoms"
+            activeOpacity={0.8}
+            accessibilityLabel="Enregistrer la liste des prénoms pour les prochaines parties"
           >
             <Text style={[styles.saveText, saveFeedback && styles.saveTextActive]}>
-              {saveFeedback ? '✓ Prénoms enregistrés !' : '💾 Enregistrer la liste'}
+              {saveFeedback ? '✨ Prénoms enregistrés pour la prochaine fois !' : '💾 Mémoriser cette équipe'}
             </Text>
           </TouchableOpacity>
         </ScrollView>
 
-        {/* Pied de page */}
+        {/* Pied de page fixe avec bouton chaleureux */}
         <View style={styles.footer}>
           <PrimaryButton
-            label="Lancer la partie 🚀"
+            label="C'est parti ! Lancer la partie 🚀"
             onPress={handleContinue}
             accessibilityLabel="Lancer la partie Dit-Paulo"
           />
@@ -214,18 +218,20 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.md,
     gap: spacing.xs,
   },
   backButton: {
     alignSelf: 'flex-start',
-    paddingVertical: spacing.sm,
-    marginBottom: spacing.sm,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceElevated,
+    marginBottom: spacing.xs,
   },
   backText: {
-    fontSize: typography.sizes.md,
-    color: colors.accent,
-    fontWeight: typography.weights.medium,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
   },
   title: {
     fontSize: typography.sizes.xxl,
@@ -234,9 +240,9 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: typography.sizes.md,
+    fontSize: typography.sizes.sm,
     color: colors.textSecondary,
-    marginTop: spacing.xs,
+    flex: 1,
   },
   scrollView: {
     flex: 1,
@@ -246,28 +252,26 @@ const styles = StyleSheet.create({
     maxWidth: 680,
     alignSelf: 'center',
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.lg,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1.5,
-    borderColor: colors.surfaceBorder,
     borderStyle: 'dashed',
     paddingVertical: spacing.md,
     gap: spacing.sm,
     marginTop: spacing.xs,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
   },
   addIcon: {
     fontSize: typography.sizes.lg,
-    color: colors.accent,
     fontWeight: typography.weights.bold,
   },
   addText: {
     fontSize: typography.sizes.md,
-    color: colors.accentLight,
     fontWeight: typography.weights.semibold,
   },
   saveButton: {
@@ -275,7 +279,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surfaceElevated,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
     paddingVertical: spacing.md,
@@ -286,8 +290,8 @@ const styles = StyleSheet.create({
     borderColor: colors.success,
   },
   saveText: {
-    fontSize: typography.sizes.md,
-    color: colors.textPrimary,
+    fontSize: typography.sizes.sm,
+    color: colors.textSecondary,
     fontWeight: typography.weights.semibold,
   },
   saveTextActive: {
@@ -298,7 +302,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl,
     paddingTop: spacing.md,
-    backgroundColor: 'rgba(13, 13, 18, 0.85)',
+    backgroundColor: 'rgba(13, 13, 18, 0.9)',
     borderTopWidth: 1,
     borderTopColor: colors.surfaceBorder,
     alignItems: 'center',
@@ -314,6 +318,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
+    marginLeft: spacing.sm,
   },
   playerCountMax: {
     backgroundColor: 'rgba(255, 214, 10, 0.2)',
@@ -332,7 +337,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1.5,
     borderColor: colors.warning,
     paddingVertical: spacing.md,

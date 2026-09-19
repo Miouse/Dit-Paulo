@@ -68,7 +68,7 @@ export default function SetupCategoriesScreen() {
 
   return (
     <ScreenContainer noPadding>
-      {/* En-tête fixe */}
+      {/* En-tête fixe convivial */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -79,8 +79,8 @@ export default function SetupCategoriesScreen() {
         </TouchableOpacity>
 
         <View style={styles.titleWrap}>
-          <Text style={styles.title}>Choisis tes Thèmes 🗂️</Text>
-          <Text style={styles.subtitle}>Coche les catégories que tu veux pour cette partie</Text>
+          <Text style={styles.title}>Quelle ambiance ce soir ? 🎭</Text>
+          <Text style={styles.subtitle}>Choisis tes thèmes ou applique un pack en 1 clic !</Text>
         </View>
 
         <View style={{ width: 60 }} />
@@ -89,7 +89,7 @@ export default function SetupCategoriesScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Préréglages d'ambiance en 1 clic */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>⚡ AMBIANCES PRÊTES À L'EMPLOI</Text>
+          <Text style={styles.sectionTitle}>✨ PACKS D'AMBIANCE EXPRESS</Text>
         </View>
 
         <ScrollView
@@ -120,7 +120,7 @@ export default function SetupCategoriesScreen() {
 
         {/* Option du Système de Points */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>🏆 RÈGLE DU JEU & POINTS</Text>
+          <Text style={styles.sectionTitle}>🎮 STYLE DE JEU & POINTS</Text>
         </View>
 
         <View style={styles.pointsOptionCard}>
@@ -129,7 +129,7 @@ export default function SetupCategoriesScreen() {
               <Text style={styles.pointsOptionTitle}>Compter les points (+1 Pt)</Text>
               <View style={[styles.modeBadge, { backgroundColor: state.pointsEnabled ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255, 255, 255, 0.06)' }]}>
                 <Text style={[styles.modeBadgeText, { color: state.pointsEnabled ? '#FFD700' : colors.textSecondary }]}>
-                  {state.pointsEnabled ? 'Mode Compétition 🥇' : 'Mode Chill ☕'}
+                  {state.pointsEnabled ? 'Mode Compétition 🏆' : 'Mode Chill ☕'}
                 </Text>
               </View>
             </View>
@@ -152,7 +152,7 @@ export default function SetupCategoriesScreen() {
         <View style={styles.sectionHeader}>
           <View style={styles.rowBetween}>
             <Text style={styles.sectionTitle}>
-              🃏 CATÉGORIES ({state.selectedCategories.length} / {allCategories.length})
+              🃏 THÈMES ({state.selectedCategories.length} / {allCategories.length})
             </Text>
             <TouchableOpacity
               onPress={() => {
@@ -164,7 +164,7 @@ export default function SetupCategoriesScreen() {
               }}
             >
               <Text style={styles.toggleAllText}>
-                {state.selectedCategories.length === allCategories.length ? 'Désélectionner' : 'Tout cocher'}
+                {state.selectedCategories.length === allCategories.length ? '1 seul thème' : 'Tout cocher'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -229,7 +229,7 @@ export default function SetupCategoriesScreen() {
       <View style={styles.footer}>
         <View style={styles.footerStats}>
           <Text style={styles.footerStatsCount}>
-            {totalSelectedQuestionsCount} questions sélectionnées
+            ✨ {totalSelectedQuestionsCount} questions sélectionnées
           </Text>
           <Text style={styles.footerStatsSub}>
             sur {state.selectedCategories.length} thème{state.selectedCategories.length > 1 ? 's' : ''}
@@ -237,7 +237,7 @@ export default function SetupCategoriesScreen() {
         </View>
 
         <PrimaryButton
-          label="CONTINUER (Joueurs) ➔"
+          label="Passer aux Joueurs ➔"
           onPress={handleNext}
           disabled={state.selectedCategories.length === 0}
           accessibilityLabel="Passer à la sélection des joueurs"

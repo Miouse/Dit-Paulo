@@ -1,6 +1,6 @@
 // components/QuestionCard.tsx
-// Carte principale de jeu adaptative, responsive et animée (3D Flip + Slide Pioche ➔ Centre ➔ Défausse)
-// Stylisation dynamique par Catégorie de question (sans niveaux d'intensité)
+// Carte principale de jeu adaptative, responsive, chaleureuse et animée (3D Flip + Slide)
+// Stylisation dynamique par Catégorie de question avec mise en valeur conviviale du joueur
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
@@ -30,7 +30,7 @@ export function QuestionCard({
   // Hauteur dynamique de la carte selon la taille d'écran
   const cardHeight = isDesktop
     ? 460
-    : Math.min(380, Math.max(260, Math.floor(windowHeight * 0.41)));
+    : Math.min(380, Math.max(260, Math.floor(windowHeight * 0.42)));
 
   // Calculer dynamiquement le décalage de glissement selon la taille d'écran
   const slideOffset = isDesktop ? 260 : Math.min(180, Math.floor(windowWidth * 0.4));
@@ -130,7 +130,7 @@ export function QuestionCard({
         style={[
           styles.card,
           {
-            maxWidth: isDesktop ? 380 : '100%',
+            maxWidth: isDesktop ? 400 : '100%',
             height: cardHeight,
             borderColor: themeColor,
             shadowColor: themeColor,
@@ -144,13 +144,13 @@ export function QuestionCard({
           },
         ]}
       >
-        {/* Motifs filigranes aux coins façon cartes de poker */}
-        <Text style={[styles.cornerMotif, styles.topLeft]}>♠ ♥</Text>
-        <Text style={[styles.cornerMotif, styles.topRight]}>♦ ♣</Text>
-        <Text style={[styles.cornerMotif, styles.bottomLeft]}>♦ ♣</Text>
-        <Text style={[styles.cornerMotif, styles.bottomRight]}>♠ ♥</Text>
+        {/* Motifs discrets aux coins */}
+        <Text style={[styles.cornerMotif, styles.topLeft]}>✨</Text>
+        <Text style={[styles.cornerMotif, styles.topRight]}>✨</Text>
+        <Text style={[styles.cornerMotif, styles.bottomLeft]}>✨</Text>
+        <Text style={[styles.cornerMotif, styles.bottomRight]}>✨</Text>
 
-        {/* Bordure intérieure */}
+        {/* Bordure intérieure chaleureuse */}
         <View
           style={[
             styles.innerFrame,
@@ -158,7 +158,7 @@ export function QuestionCard({
             { borderColor: catConfig.badgeBg },
           ]}
         >
-          {/* En-tête : Badge thématique de Catégorie */}
+          {/* En-tête : Badge thématique convivial */}
           <View style={styles.badgeRow}>
             <View style={[styles.badge, { borderColor: themeColor, backgroundColor: catConfig.badgeBg }]}>
               <Text style={[styles.badgeText, { color: themeColor }]}>
@@ -185,25 +185,32 @@ export function QuestionCard({
             </Text>
           </View>
 
-          {/* Pied de carte : Nom du joueur interrogé */}
+          {/* Pied de carte : Invitation amicale au joueur */}
           <View style={[styles.playerTagContainer, !isDesktop && styles.playerTagContainerMobile]}>
-            <Text style={[styles.playerLabel, !isDesktop && styles.playerLabelMobile]}>
-              {displayedPlayer ? (
-                <>
-                  À ton tour :{' '}
+            {displayedPlayer ? (
+              <View style={styles.playerCallout}>
+                <Text style={styles.playerEmoji}>🎤</Text>
+                <Text style={[styles.playerLabel, !isDesktop && styles.playerLabelMobile]}>
+                  À toi la parole,{' '}
                   <Text style={[styles.playerNameHighlight, { color: themeColor }]}>
                     {displayedPlayer}
                   </Text>
+                  {' '}! ✨
                   {pointsEnabled && currentPlayerPoints !== undefined && (
                     <Text style={styles.playerPointsText}>
                       {' '}({currentPlayerPoints} Pt{currentPlayerPoints > 1 ? 's' : ''})
                     </Text>
                   )}
-                </>
-              ) : (
-                'Question pour le groupe'
-              )}
-            </Text>
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.playerCallout}>
+                <Text style={styles.playerEmoji}>💬</Text>
+                <Text style={[styles.playerLabel, !isDesktop && styles.playerLabelMobile]}>
+                  Question ouverte pour tout le groupe ! ✨
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </Animated.View>
@@ -221,7 +228,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     backgroundColor: colors.surface,
-    borderRadius: 28,
+    borderRadius: 30,
     borderWidth: 2,
     padding: spacing.md,
     justifyContent: 'space-between',
@@ -232,11 +239,11 @@ const styles = StyleSheet.create({
   },
   innerFrame: {
     flex: 1,
-    borderWidth: 1,
-    borderRadius: 20,
+    borderWidth: 1.5,
+    borderRadius: 22,
     padding: spacing.lg,
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.015)',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
   },
   innerFrameMobile: {
     padding: spacing.md,
@@ -244,8 +251,7 @@ const styles = StyleSheet.create({
   cornerMotif: {
     position: 'absolute',
     fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.12)',
-    fontFamily: 'monospace',
+    opacity: 0.25,
   },
   topLeft: { top: 12, left: 14 },
   topRight: { top: 12, right: 14 },
@@ -258,8 +264,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: radii.full,
     borderWidth: 1.5,
     backgroundColor: colors.surfaceElevated,
@@ -267,7 +273,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: typography.sizes.xs,
     fontWeight: typography.weights.bold,
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
   idBadge: {
     paddingHorizontal: 8,
@@ -309,10 +315,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: spacing.xs,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.07)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   playerTagContainerMobile: {
-    paddingTop: 4,
+    paddingTop: 6,
+  },
+  playerCallout: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  playerEmoji: {
+    fontSize: 14,
   },
   playerLabel: {
     fontSize: typography.sizes.sm,
