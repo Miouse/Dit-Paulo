@@ -319,7 +319,7 @@ export const questions: Question[] = [
     id: 'per_020',
     text: "La version de toi dans 10 ans, elle te ressemble ou elle t'est étrangère ?",
     modes: ['deep', 'couple', 'date'],
-    category: 'personality',
+    category: 'future',
     minPlayers: 2,
   },
   {
@@ -441,7 +441,7 @@ export const questions: Question[] = [
   },
   {
     id: 'mem_012',
-    text: "Quel est le conseil que tu t'aurais donné à 15 ans ?",
+    text: "Quel est le conseil que tu te serais donné à 15 ans ?",
     modes: ['friends', 'couple', 'deep'],
     category: 'memories',
     minPlayers: 2,
@@ -581,13 +581,6 @@ export const questions: Question[] = [
     id: 'fut_006',
     text: "Tu penses que ta vie ressemblera à ce que tu imagines aujourd'hui, ou tu te dis que ça sera tout autre chose ?",
     modes: ['deep', 'friends', 'date'],
-    category: 'future',
-    minPlayers: 2,
-  },
-  {
-    id: 'fut_007',
-    text: "Si tu devais choisir entre une vie longue et ordinaire ou une vie courte mais intense, tu choisirais quoi ?",
-    modes: ['deep', 'friends', 'party'],
     category: 'future',
     minPlayers: 2,
   },
@@ -897,9 +890,9 @@ export const questions: Question[] = [
 
   {
     id: 'deb_001',
-    text: "Quelle est ton goal dans la vie ?",
+    text: "Quel est ton plus grand objectif dans la vie ?",
     modes: ['friends', 'deep', 'party'],
-    category: 'debate',
+    category: 'future',
     minPlayers: 2,
   },
   {
@@ -1451,7 +1444,7 @@ export const questions: Question[] = [
   },
   {
     id: 'fun_004',
-    text: "Tu préfères être avoir trop chaud ou avoir trop froid ? Défends ta réponse.",
+    text: "Tu préfères avoir trop chaud ou avoir trop froid ? Défends ta réponse.",
     modes: ['friends', 'party'],
     category: 'fun',
     minPlayers: 2,
@@ -1799,14 +1792,14 @@ export const questions: Question[] = [
     id: 'nof_002',
     text: "Quelle est la pire rumeur qui a couru sur toi et qui était malheureusement 100% vraie ?",
     modes: ['nofilter', 'party', 'friends'],
-    category: 'memories',
+    category: 'gossip',
     minPlayers: 2,
   },
   {
     id: 'nof_003',
     text: "Si tu devais balancer le plus gros secret d'un joueur autour de la table pour sauver ta réputation, tu le ferais ?",
     modes: ['nofilter', 'party'],
-    category: 'debate',
+    category: 'gossip',
     minPlayers: 2,
   },
   {
@@ -1855,7 +1848,7 @@ export const questions: Question[] = [
     id: 'nof_010',
     text: "Quel joueur autour de la table selon toi ferait le pire partenaire en couple et pourquoi ?",
     modes: ['nofilter', 'party'],
-    category: 'debate',
+    category: 'gossip',
     minPlayers: 2,
   },
   {
@@ -1925,7 +1918,7 @@ export const questions: Question[] = [
     id: 'nof_021',
     text: "Quel est le fantasme ou le désir le plus inavouable que tu n'as jamais osé verbaliser ?",
     modes: ['nofilter', 'date', 'couple'],
-    category: 'flirt',
+    category: 'hot',
     minPlayers: 2,
   },
   {
@@ -2016,7 +2009,7 @@ export const questions: Question[] = [
     id: 'nof_035',
     text: "Si la vérité absolue était révélée sur tout le monde ici pendant 5 minutes, qui aurait le plus à perdre ?",
     modes: ['nofilter', 'party'],
-    category: 'debate',
+    category: 'gossip',
     minPlayers: 2,
   },
 
