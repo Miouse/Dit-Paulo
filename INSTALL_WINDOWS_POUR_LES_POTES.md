@@ -1,49 +1,38 @@
 # Salut ! Bienvenue sur Dit-Paulo
 
-Si tu es là, c'est pour lancer le jeu sur ton PC Windows.
-Ne t'en fais pas si tu n'y connais rien en informatique : ça prend 3 minutes et ton PC ne risque absolument rien.
+Voici comment lancer le jeu sur ton PC Windows en deux clics sans taper aucune commande.
 
 ---
 
-### 1. Installer Node.js
+### 1. Installer Node.js (une seule fois)
 Ton PC a besoin de ce petit programme gratuit pour faire tourner le jeu.
 - Va sur : **https://nodejs.org**
 - Clique sur le bouton vert **LTS**.
-- Ouvre le fichier téléchargé et clique sur suivant / installer jusqu'au bout (laisse les options par défaut).
+- Ouvre le fichier téléchargé et installe-le (suivant / installer jusqu'au bout avec les options par défaut).
 
 ---
 
 ### 2. Télécharger le dossier du jeu
 - Va sur ce lien : **https://github.com/Miouse/Dit-Paulo**
 - En haut à droite, clique sur le bouton vert **Code**, puis sur **Download ZIP**.
-- Fais un clic droit sur le fichier ZIP téléchargé > **Extraire tout...** > clique sur **Extraire**.
+- Clic droit sur le fichier ZIP téléchargé > **Extraire tout...** > clique sur **Extraire**.
 - Place le dossier obtenu sur ton **Bureau** (ou dans tes Téléchargements).
 
 ---
 
-### 3. Ouvrir le Terminal (l'astuce toute simple)
-Pas besoin de taper des chemins compliqués :
-1. Ouvre le dossier du jeu dans l'Explorateur de fichiers de Windows.
-2. Clique tout en haut dans la **barre d'adresse** (là où est écrit le chemin du dossier).
-3. Efface ce qui est écrit, tape simplement `powershell` (ou `cmd`) et appuie sur **Entrée**.
-4. Une fenêtre bleue ou noire s'ouvre, déjà positionnée au bon endroit dans le dossier.
+### 3. Lancer le jeu en 1 double-clic
+1. Ouvre le dossier du jeu.
+2. Double-clique simplement sur le fichier :  
+   **`LANCER-LE-JEU-WINDOWS.bat`**
+3. C'est tout ! Le script installe tout automatiquement la première fois, et ton navigateur s'ouvre avec le jeu.
 
 ---
 
-### 4. Lancer le jeu
-
-1. Dans la fenêtre, tape :
-   ```bash
-   npm install
-   ```
-   *(Patiente 30 secondes le temps que les composants s'installent).*
-
-2. Ensuite, tape :
-   ```bash
-   npm run web
-   ```
-
-Ton navigateur (Chrome, Edge ou Firefox) s'ouvre tout seul avec **Dit-Paulo** prêt à jouer.
+### Comment mettre l'icône du jeu sur ton Bureau ?
+Dès que le jeu est ouvert dans ton navigateur (Chrome, Edge ou Firefox) :
+- En haut à droite dans la barre d'adresse, clique sur la petite icône **Installer Dit-Paulo** (ou menu `...` > *Enregistrer et partager* > *Installer la page en tant qu'application*).
+- L'icône officielle de Dit-Paulo sera créée directement sur ton Bureau Windows !
+- Sinon, tu peux aussi faire un clic droit sur **`LANCER-LE-JEU-WINDOWS.bat`** > **Envoyer vers > Bureau (créer un raccourci)**.
 
 ---
 

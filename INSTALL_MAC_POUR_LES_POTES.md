@@ -1,52 +1,38 @@
 # Salut ! Bienvenue sur Dit-Paulo
 
-Si tu es là, c'est pour tester le jeu sur ton Mac.
-Si les mots Terminal ou GitHub te font un peu peur, ne t'inquiète pas : ton Mac ne risque rien du tout.
-
-C'est plié en 3 minutes chrono avec 4 petites étapes.
+Voici comment lancer le jeu sur ton Mac en deux clics sans taper aucune commande.
 
 ---
 
-### 1. Installer Node.js
+### 1. Installer Node.js (une seule fois)
 Ton Mac a juste besoin de ce petit programme gratuit pour exécuter le jeu.
 - Va sur : **https://nodejs.org**
 - Clique sur le bouton vert **LTS**.
-- Ouvre le fichier téléchargé et installe-le normalement en faisant suivant / continuer jusqu'au bout.
+- Ouvre le fichier téléchargé et installe-le normalement (suivant / continuer jusqu'au bout).
 
 ---
 
 ### 2. Télécharger le dossier du jeu
-Pas besoin de compte :
 - Va sur ce lien : **https://github.com/Miouse/Dit-Paulo**
 - En haut à droite, clique sur le bouton vert **Code**, puis sur **Download ZIP**.
 - Double-clique sur le fichier téléchargé pour le décompresser, et pose le dossier obtenu sur ton **Bureau** (ou dans tes Téléchargements).
 
 ---
 
-### 3. Ouvrir le Terminal
-- Sur ton clavier de Mac, fais : **Cmd + Espace** pour ouvrir la recherche Spotlight.
-- Tape `terminal` et appuie sur **Entrée**.
-- Une fenêtre s'ouvre. C'est ici qu'on va taper deux lignes de commande toutes simples.
+### 3. Lancer le jeu en 1 double-clic
+1. Ouvre le dossier du jeu.
+2. Double-clique simplement sur le fichier :  
+   **`LANCER-LE-JEU-MAC.command`**
+3. C'est tout ! Le script s'occupe de tout installer automatiquement la première fois, et ton navigateur s'ouvre avec le jeu.
+
+*(Note : Si macOS affiche un avertissement de sécurité au premier double-clic, fais simplement **Clic droit > Ouvrir > Ouvrir** pour l'autoriser).*
 
 ---
 
-### 4. Lancer le jeu
-
-1. Dans la fenêtre du Terminal, tape `cd ` (avec un espace après `cd`), puis **glisse et dépose le dossier du jeu directement depuis ton Finder dans la fenêtre**, et appuie sur **Entrée**.
-   *(Ça écrit le chemin complet tout seul sans risque d'erreur).*
-
-2. Tape ensuite :
-   ```bash
-   npm install
-   ```
-   *(Patiente une trentaine de secondes le temps qu'il charge les composants du jeu).*
-
-3. Et enfin, tape :
-   ```bash
-   npm run web
-   ```
-
-Et voilà ! Ton navigateur (Safari ou Chrome) va s'ouvrir automatiquement avec **Dit-Paulo** prêt à jouer.
+### Comment mettre l'icône du jeu sur ton Bureau / Dock ?
+Dès que le jeu est ouvert dans Safari ou Chrome :
+- **Sur Safari** : Va dans le menu en haut **Fichier > Ajouter au Dock...**.
+- **Sur Chrome** : Clique sur les 3 petits points en haut à droite > **Enregistrer et partager > Installer Dit-Paulo** (ou créer un raccourci sur le Bureau).
 
 ---
 
