@@ -1,63 +1,58 @@
-# Salut mon pote ! 👋 Bienvenue sur Dit-Paulo
+# Salut ! Bienvenue sur Dit-Paulo
 
-Si tu lis ces lignes, c'est que je t'ai vendu le jeu et que tu veux le tester sur ton Mac.  
-Et si le mot « Terminal » ou « GitHub » te donne des sueurs froides : **souffle un coup, détends-toi, ton ordi ne va pas exploser**. 🧘‍♂️
+Si tu es là, c'est pour tester le jeu sur ton Mac.
+Si les mots Terminal ou GitHub te font un peu peur, ne t'inquiète pas : ton Mac ne risque rien du tout.
 
-C'est promis, c'est plus facile que de monter un meuble IKEA. En 3 minutes et 4 étapes, on est posés en train de jouer. Suis le guide !
-
----
-
-### 1. Le seul truc à installer : Node.js ☕
-Ton Mac a juste besoin d'un petit moteur pour faire tourner le jeu.
-- Va sur : **[https://nodejs.org](https://nodejs.org)**
-- Clique sur le gros bouton vert qui dit **LTS (Recommandé)**.
-- Ouvre le fichier téléchargé et fais ce qu'on fait tous : clique sur *« Continuer »*, *« Accepter »*, *« Installer »* sans lire, jusqu'à ce qu'il te dise que c'est bon.
+C'est plié en 3 minutes chrono avec 4 petites étapes.
 
 ---
 
-### 2. Télécharge le jeu 📦
-Pas besoin de compte de pirate ni de commandes bizarres :
-- Clique sur ce lien : **[https://github.com/Miouse/Dit-Paulo](https://github.com/Miouse/Dit-Paulo)**
+### 1. Installer Node.js
+Ton Mac a juste besoin de ce petit programme gratuit pour exécuter le jeu.
+- Va sur : **https://nodejs.org**
+- Clique sur le bouton vert **LTS**.
+- Ouvre le fichier téléchargé et installe-le normalement en faisant suivant / continuer jusqu'au bout.
+
+---
+
+### 2. Télécharger le dossier du jeu
+Pas besoin de compte :
+- Va sur ce lien : **https://github.com/Miouse/Dit-Paulo**
 - En haut à droite, clique sur le bouton vert **Code**, puis sur **Download ZIP**.
-- Double-clique sur le fichier téléchargé pour le décompresser, et glisse le dossier sur ton **Bureau** (ou dans tes Téléchargements, où tu veux).
+- Double-clique sur le fichier téléchargé pour le décompresser, et pose le dossier obtenu sur ton **Bureau** (ou dans tes Téléchargements).
 
 ---
 
-### 3. La fameuse « fenêtre de hacker » 💻
-C'est le moment où tu vas avoir l'air d'un génie de la tech pendant 30 secondes devant tes proches.
-- Sur ton clavier de Mac, fais : **Cmd (⌘) + Barre d'Espace** pour ouvrir Spotlight.
+### 3. Ouvrir le Terminal
+- Sur ton clavier de Mac, fais : **Cmd + Espace** pour ouvrir la recherche Spotlight.
 - Tape `terminal` et appuie sur **Entrée**.
-- Une fenêtre noire (ou blanche) s'ouvre. Ne panique pas, elle ne mord pas !
+- Une fenêtre s'ouvre. C'est ici qu'on va taper deux lignes de commande toutes simples.
 
 ---
 
-### 4. Les 3 formules magiques 🧙‍♂️
+### 4. Lancer le jeu
 
-Dans cette fenêtre, on va juste lui dire d'ouvrir le dossier et de lancer le jeu :
+1. Dans la fenêtre du Terminal, tape `cd ` (avec un espace après `cd`), puis **glisse et dépose le dossier du jeu directement depuis ton Finder dans la fenêtre**, et appuie sur **Entrée**.
+   *(Ça écrit le chemin complet tout seul sans risque d'erreur).*
 
-1. Tape `cd ` (avec un espace après `cd`), puis **glisse et dépose ton dossier du jeu directement depuis ton Finder dans la fenêtre noire**, et appuie sur **Entrée**.  
-   *(Magie : ça écrit tout le chemin tout seul, zéro faute de frappe possible).*
-
-2. Tape ensuite ça et appuie sur **Entrée** :
+2. Tape ensuite :
    ```bash
    npm install
    ```
-   *(Laisse-le bosser 30 secondes, il télécharge les rouages du jeu).*
+   *(Patiente une trentaine de secondes le temps qu'il charge les composants du jeu).*
 
-3. Et enfin, le grand final :
+3. Et enfin, tape :
    ```bash
    npm run web
    ```
 
-BOOM. 💥 Ton navigateur (Safari ou Chrome) va s'ouvrir tout seul avec **Dit-Paulo** sous les yeux !
+Et voilà ! Ton navigateur (Safari ou Chrome) va s'ouvrir automatiquement avec **Dit-Paulo** prêt à jouer.
 
 ---
 
-### 💌 Bonus : Récupérer mes questions secrètes (le Deck)
-Si je t'ai envoyé un fichier ou un texte avec nos questions et dossiers :
-1. Dans le jeu, va dans **Mes Cartes Personnalisées ⭐**.
-2. Clique sur **📥 Importer un Deck**.
-3. Colle mon texte (ou sélectionne le fichier que je t'ai envoyé) et clique sur **Importer**.
-4. Toutes mes vérités piquantes et nos délires perso sont direct dans ton deck.
-
-Bonne soirée et prépare-toi à assumer tes réponses ! 🍻🃏
+### Pour récupérer les questions personnalisées (le Deck)
+Si je t'ai envoyé un fichier ou un texte avec des questions spécifiques :
+1. Dans le jeu, va dans **Mes Cartes Personnalisées**.
+2. Clique sur **Importer un Deck**.
+3. Colle le texte (ou sélectionne le fichier reçu) et clique sur **Importer**.
+4. Les questions s'ajoutent directement à ta partie.
