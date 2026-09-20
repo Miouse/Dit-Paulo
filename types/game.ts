@@ -63,7 +63,7 @@ export const CATEGORY_PRESETS: CategoryPreset[] = [
     label: '100% Cash & Hot',
     emoji: '🔥',
     description: 'Potins extrêmes, vérités crues et intimité sans filtre',
-    categories: ['gossip', 'hot', 'hypothetical'],
+    categories: ['gossip', 'situationship', 'hot', 'hypothetical'],
   },
 ];
 

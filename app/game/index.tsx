@@ -13,7 +13,16 @@ import { useGame } from '../../context/GameContext';
 import { favoritesService } from '../../services/favoritesService';
 import { jokeEngine, type JokeEffect } from '../../services/jokeEngine';
 import { questionEngine } from '../../services/questionEngine';
-import { type Player } from '../../types/game';
+import { CATEGORY_CONFIGS, type Player, type QuestionCategory } from '../../types/game';
+
+interface PlayedCardHistoryItem {
+  id: string;
+  text: string;
+  category: QuestionCategory;
+  playerName?: string;
+  result: 'validated' | 'tongue_in_cheek' | 'skipped';
+  timestamp: number;
+}
 
 export default function GameScreen() {
   const { width: windowWidth } = useWindowDimensions();
@@ -33,6 +42,8 @@ export default function GameScreen() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeJoke, setActiveJoke] = useState<JokeEffect | null>(null);
   const [showPodium, setShowPodium] = useState(false);
+  const [playedHistory, setPlayedHistory] = useState<PlayedCardHistoryItem[]>([]);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // ─── États Joker Double Niveau ─────────────────────────────────────────────
   // Joker Hasard (-10 Pts) : roulette animée parmi les autres joueurs
@@ -157,6 +168,19 @@ export default function GameScreen() {
 
   // Obtenir la question suivante & attribuer +1 Pt si points activés
   const handleNextQuestion = () => {
+    if (currentQuestion) {
+      setPlayedHistory((prev) => [
+        {
+          id: currentQuestion.id,
+          text: questionEngine.formatQuestionText(currentQuestion.text, effectivePlayer?.name, state.players),
+          category: currentQuestion.category,
+          playerName: effectivePlayer?.name,
+          result: 'validated',
+          timestamp: Date.now(),
+        },
+        ...prev,
+      ]);
+    }
     if (state.pointsEnabled && effectivePlayer) {
       addPlayerPoints(effectivePlayer.id, 1);
     }
@@ -165,11 +189,37 @@ export default function GameScreen() {
 
   // Réponse insatisfaisante / langue de bois (+0 Pt)
   const handleUnsatisfactoryResponse = () => {
+    if (currentQuestion) {
+      setPlayedHistory((prev) => [
+        {
+          id: currentQuestion.id,
+          text: questionEngine.formatQuestionText(currentQuestion.text, effectivePlayer?.name, state.players),
+          category: currentQuestion.category,
+          playerName: effectivePlayer?.name,
+          result: 'tongue_in_cheek',
+          timestamp: Date.now(),
+        },
+        ...prev,
+      ]);
+    }
     drawNext(true);
   };
 
   // Passer la question sans changer de joueur
   const handleSkipQuestion = () => {
+    if (currentQuestion) {
+      setPlayedHistory((prev) => [
+        {
+          id: currentQuestion.id,
+          text: questionEngine.formatQuestionText(currentQuestion.text, effectivePlayer?.name, state.players),
+          category: currentQuestion.category,
+          playerName: effectivePlayer?.name,
+          result: 'skipped',
+          timestamp: Date.now(),
+        },
+        ...prev,
+      ]);
+    }
     drawNext(false);
   };
 
@@ -405,6 +455,16 @@ export default function GameScreen() {
             >
               <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
                 {timerModeEnabled ? `⏱️ ${timeLeft}s` : '🥔 Patate'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setShowHistoryModal(true)}
+              style={[styles.actionChip, !isDesktop && styles.actionChipMobile]}
+              accessibilityLabel="Consulter l'historique des cartes de la partie"
+            >
+              <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
+                📜 {playedHistory.length > 0 ? `${playedHistory.length}` : 'Historique'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -684,6 +744,14 @@ export default function GameScreen() {
             </ScrollView>
 
             <View style={styles.podiumActions}>
+              {playedHistory.length > 0 && (
+                <PrimaryButton
+                  label={`📜 REVOIR LES CARTES (${playedHistory.length})`}
+                  variant="secondary"
+                  onPress={() => setShowHistoryModal(true)}
+                  style={{ width: '100%', marginBottom: spacing.xs }}
+                />
+              )}
               <PrimaryButton
                 label="🔄 NOUVELLE PARTIE"
                 onPress={() => {
@@ -702,6 +770,83 @@ export default function GameScreen() {
               >
                 <Text style={styles.homeLinkText}>🏠 Écran d'accueil</Text>
               </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Historique des questions de la session */}
+      <Modal
+        visible={showHistoryModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowHistoryModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.historyCard, !isDesktop && styles.historyCardMobile]}>
+            <View style={styles.historyHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.historyTitle}>📜 CARTES JOUÉES</Text>
+                <Text style={styles.historySubtitle}>
+                  {playedHistory.length} question{playedHistory.length > 1 ? 's' : ''} tirée{playedHistory.length > 1 ? 's' : ''} dans cette session
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowHistoryModal(false)}
+                style={styles.historyCloseButton}
+              >
+                <Text style={styles.historyCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {playedHistory.length === 0 ? (
+              <View style={styles.historyEmpty}>
+                <Text style={styles.historyEmptyEmoji}>🃏</Text>
+                <Text style={styles.historyEmptyText}>Aucune carte n'a encore été jouée !</Text>
+              </View>
+            ) : (
+              <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
+                {playedHistory.map((item, index) => {
+                  const cfg = CATEGORY_CONFIGS[item.category] || CATEGORY_CONFIGS.fun;
+                  return (
+                    <View key={`${item.id}-${index}`} style={styles.historyItem}>
+                      <View style={styles.historyItemHeader}>
+                        <View style={[styles.historyBadge, { backgroundColor: cfg.badgeBg, borderColor: cfg.color }]}>
+                          <Text style={[styles.historyBadgeText, { color: cfg.color }]}>
+                            {cfg.emoji} {cfg.label}
+                          </Text>
+                        </View>
+                        <Text style={styles.historyItemPlayer}>
+                          {item.playerName ? `🎤 ${item.playerName}` : '👥 Groupe'}
+                        </Text>
+                      </View>
+
+                      <Text style={styles.historyItemText}>« {item.text} »</Text>
+
+                      <View style={styles.historyItemFooter}>
+                        <Text style={styles.historyIdText}>#{item.id}</Text>
+                        {item.result === 'validated' && (
+                          <Text style={[styles.historyResultText, { color: '#30D158' }]}>👍 Validé</Text>
+                        )}
+                        {item.result === 'tongue_in_cheek' && (
+                          <Text style={[styles.historyResultText, { color: '#FF9F0A' }]}>👎 Langue de bois</Text>
+                        )}
+                        {item.result === 'skipped' && (
+                          <Text style={[styles.historyResultText, { color: colors.textTertiary }]}>⏭️ Passée</Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
+
+            <View style={styles.historyActions}>
+              <PrimaryButton
+                label="Fermer"
+                onPress={() => setShowHistoryModal(false)}
+                style={{ width: '100%' }}
+              />
             </View>
           </View>
         </View>
@@ -1258,5 +1403,113 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     textAlign: 'center',
     lineHeight: typography.sizes.md * typography.lineHeights.relaxed,
+  },
+  historyCard: {
+    width: '100%',
+    maxWidth: 520,
+    maxHeight: '85%',
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: radii.xxl,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    justifyContent: 'space-between',
+  },
+  historyCardMobile: {
+    padding: spacing.md,
+    maxHeight: '90%',
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+  },
+  historyTitle: {
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+  },
+  historySubtitle: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  historyCloseButton: {
+    padding: spacing.xs,
+  },
+  historyCloseText: {
+    fontSize: 18,
+    color: colors.textSecondary,
+  },
+  historyEmpty: {
+    paddingVertical: spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyEmptyEmoji: {
+    fontSize: 40,
+    marginBottom: spacing.sm,
+  },
+  historyEmptyText: {
+    fontSize: typography.sizes.sm,
+    color: colors.textSecondary,
+  },
+  historyList: {
+    flex: 1,
+    marginBottom: spacing.md,
+  },
+  historyItem: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  historyItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  historyBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: radii.full,
+    borderWidth: 1,
+  },
+  historyBadgeText: {
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
+  },
+  historyItemPlayer: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    fontWeight: typography.weights.medium,
+  },
+  historyItemText: {
+    fontSize: typography.sizes.sm,
+    color: colors.textPrimary,
+    lineHeight: 20,
+    marginVertical: spacing.xs,
+  },
+  historyItemFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  historyIdText: {
+    fontSize: 10,
+    color: colors.textTertiary,
+    fontFamily: 'monospace',
+  },
+  historyResultText: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semibold,
+  },
+  historyActions: {
+    marginTop: spacing.xs,
   },
 });

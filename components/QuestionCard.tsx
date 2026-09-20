@@ -3,7 +3,7 @@
 // Stylisation dynamique par Catégorie de question avec mise en valeur conviviale du joueur
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Share, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { colors, radii, shadows, spacing, typography } from '../constants/theme';
 import { questionEngine } from '../services/questionEngine';
 import { CATEGORY_CONFIGS } from '../types/game';
@@ -124,6 +124,19 @@ export function QuestionCard({
     );
   }, [displayedQuestion.id, displayedQuestion.text, displayedPlayer, allPlayers]);
 
+  // Partage de la question au format élégant
+  const handleShare = async () => {
+    try {
+      const shareMessage = `💬 Dit-Paulo ? [${catConfig.emoji} ${catConfig.label}]\n\n« ${formattedText} »\n\nTu répondrais quoi ? 👀✨`;
+      await Share.share({
+        message: shareMessage,
+        title: 'Dit-Paulo ?',
+      });
+    } catch {
+      // Ignorer si annulé par l'utilisateur
+    }
+  };
+
   return (
     <View style={styles.outerContainer}>
       <Animated.View
@@ -158,7 +171,7 @@ export function QuestionCard({
             { borderColor: catConfig.badgeBg },
           ]}
         >
-          {/* En-tête : Badge thématique convivial */}
+          {/* En-tête : Badge thématique convivial & Actions */}
           <View style={styles.badgeRow}>
             <View style={[styles.badge, { borderColor: themeColor, backgroundColor: catConfig.badgeBg }]}>
               <Text style={[styles.badgeText, { color: themeColor }]}>
@@ -166,8 +179,18 @@ export function QuestionCard({
               </Text>
             </View>
 
-            <View style={styles.idBadge}>
-              <Text style={styles.idBadgeText}>#{displayedQuestion.id}</Text>
+            <View style={styles.headerRightActions}>
+              <TouchableOpacity
+                style={styles.shareButton}
+                onPress={handleShare}
+                activeOpacity={0.7}
+                accessibilityLabel="Partager cette question"
+              >
+                <Text style={styles.shareIconText}>📤</Text>
+              </TouchableOpacity>
+              <View style={styles.idBadge}>
+                <Text style={styles.idBadgeText}>#{displayedQuestion.id}</Text>
+              </View>
             </View>
           </View>
 
@@ -289,6 +312,24 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.xs,
     fontWeight: typography.weights.bold,
     letterSpacing: 0.3,
+  },
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  shareButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radii.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shareIconText: {
+    fontSize: 11,
   },
   idBadge: {
     paddingHorizontal: 8,
