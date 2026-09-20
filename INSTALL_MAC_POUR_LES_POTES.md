@@ -1,56 +1,63 @@
-# 🎮 Comment lancer Dit-Paulo sur ton Mac (Spécial Potos) 🍏
+# Salut mon pote ! 👋 Bienvenue sur Dit-Paulo
 
-Pas de panique, tu n'as besoin d'aucune compétence en informatique ! Suis juste ces 4 étapes simples, ça prend 3 minutes chrono.
+Si tu lis ces lignes, c'est que je t'ai vendu le jeu et que tu veux le tester sur ton Mac.  
+Et si le mot « Terminal » ou « GitHub » te donne des sueurs froides : **souffle un coup, détends-toi, ton ordi ne va pas exploser**. 🧘‍♂️
 
----
-
-### Étape 1 : Installer le seul logiciel obligatoire (Node.js)
-1. Va sur ce site officiel : **[https://nodejs.org](https://nodejs.org)**
-2. Clique sur le gros bouton vert marqué **LTS (Recommandé pour la plupart des utilisateurs)**.
-3. Ouvre le fichier téléchargé (fichier `.pkg`) et clique sur *Continuer / Suivant / Installer* jusqu'au bout comme n'importe quelle application.
+C'est promis, c'est plus facile que de monter un meuble IKEA. En 3 minutes et 4 étapes, on est posés en train de jouer. Suis le guide !
 
 ---
 
-### Étape 2 : Récupérer le jeu
-
-Tu as deux façons très simples, choisis celle qui te plaît :
-
-#### Option A (Le plus simple — sans rien taper) :
-1. Va sur le lien GitHub : **[https://github.com/Miouse/Dit-Paulo](https://github.com/Miouse/Dit-Paulo)**
-2. Clique sur le bouton vert **Code** (en haut à droite), puis sur **Download ZIP**.
-3. Dézippe le dossier téléchargé (double-clic dessus) et glisse-le sur ton **Bureau** (ou dans tes Documents).
+### 1. Le seul truc à installer : Node.js ☕
+Ton Mac a juste besoin d'un petit moteur pour faire tourner le jeu.
+- Va sur : **[https://nodejs.org](https://nodejs.org)**
+- Clique sur le gros bouton vert qui dit **LTS (Recommandé)**.
+- Ouvre le fichier téléchargé et fais ce qu'on fait tous : clique sur *« Continuer »*, *« Accepter »*, *« Installer »* sans lire, jusqu'à ce qu'il te dise que c'est bon.
 
 ---
 
-### Étape 3 : Ouvrir le Terminal de ton Mac
-1. Sur ton clavier de Mac, appuie en même temps sur les touches :  
-   **Cmd (⌘) + Barre d'Espace** (pour ouvrir la recherche Spotlight).
-2. Tape `terminal` et appuie sur **Entrée**.
-3. Une petite fenêtre noire ou blanche s'ouvre. C'est ici que la magie opère !
+### 2. Télécharge le jeu 📦
+Pas besoin de compte de pirate ni de commandes bizarres :
+- Clique sur ce lien : **[https://github.com/Miouse/Dit-Paulo](https://github.com/Miouse/Dit-Paulo)**
+- En haut à droite, clique sur le bouton vert **Code**, puis sur **Download ZIP**.
+- Double-clique sur le fichier téléchargé pour le décompresser, et glisse le dossier sur ton **Bureau** (ou dans tes Téléchargements, où tu veux).
 
 ---
 
-### Étape 4 : Lancer le jeu ! 🚀
+### 3. La fameuse « fenêtre de hacker » 💻
+C'est le moment où tu vas avoir l'air d'un génie de la tech pendant 30 secondes devant tes proches.
+- Sur ton clavier de Mac, fais : **Cmd (⌘) + Barre d'Espace** pour ouvrir Spotlight.
+- Tape `terminal` et appuie sur **Entrée**.
+- Une fenêtre noire (ou blanche) s'ouvre. Ne panique pas, elle ne mord pas !
 
-1. Dans la fenêtre du Terminal, tape `cd ` (avec un espace après), puis **glisse-dépose le dossier du jeu directement depuis ton Finder dans la fenêtre du terminal**, puis appuie sur **Entrée**.  
-   *(Ça écrit automatiquement le bon chemin vers le dossier sans risque d'erreur !)*
+---
 
-2. Tape ensuite cette commande et appuie sur **Entrée** (patiente 30 secondes pendant que les fichiers s'installent) :
+### 4. Les 3 formules magiques 🧙‍♂️
+
+Dans cette fenêtre, on va juste lui dire d'ouvrir le dossier et de lancer le jeu :
+
+1. Tape `cd ` (avec un espace après `cd`), puis **glisse et dépose ton dossier du jeu directement depuis ton Finder dans la fenêtre noire**, et appuie sur **Entrée**.  
+   *(Magie : ça écrit tout le chemin tout seul, zéro faute de frappe possible).*
+
+2. Tape ensuite ça et appuie sur **Entrée** :
    ```bash
    npm install
    ```
+   *(Laisse-le bosser 30 secondes, il télécharge les rouages du jeu).*
 
-3. Une fois terminé, tape la commande magique pour lancer le jeu :
+3. Et enfin, le grand final :
    ```bash
    npm run web
    ```
 
-🎉 **Et voilà !** Une page internet s'ouvre automatiquement dans ton navigateur Safari ou Chrome avec le jeu **Dit-Paulo** prêt à jouer !
+BOOM. 💥 Ton navigateur (Safari ou Chrome) va s'ouvrir tout seul avec **Dit-Paulo** sous les yeux !
 
 ---
 
-### 🎁 Comment importer le paquet de cartes que ton pote t'a envoyé ?
-1. Dans le jeu, clique sur **Mes Cartes Personnalisées ⭐**.
-2. Clique sur le bouton **📥 Importer un Deck**.
-3. Si ton pote t'a envoyé un fichier `.json`, clique sur **📁 Choisir un fichier .json** et sélectionne-le. S'il t'a envoyé un texte par message, colle-le simplement dans la grande case.
-4. Clique sur **📥 Importer**... et toutes ses questions exclusives apparaîtront directement dans ta partie !
+### 💌 Bonus : Récupérer mes questions secrètes (le Deck)
+Si je t'ai envoyé un fichier ou un texte avec nos questions et dossiers :
+1. Dans le jeu, va dans **Mes Cartes Personnalisées ⭐**.
+2. Clique sur **📥 Importer un Deck**.
+3. Colle mon texte (ou sélectionne le fichier que je t'ai envoyé) et clique sur **Importer**.
+4. Toutes mes vérités piquantes et nos délires perso sont direct dans ton deck.
+
+Bonne soirée et prépare-toi à assumer tes réponses ! 🍻🃏
