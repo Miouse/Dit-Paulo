@@ -187,7 +187,22 @@ export function QuestionCard({
 
           {/* Pied de carte : Invitation amicale au joueur */}
           <View style={[styles.playerTagContainer, !isDesktop && styles.playerTagContainerMobile]}>
-            {displayedPlayer ? (
+            {displayedQuestion.category === 'debate' ? (
+              <View style={styles.playerCallout}>
+                <Text style={styles.playerEmoji}>🗣️</Text>
+                <Text style={[styles.playerLabel, !isDesktop && styles.playerLabelMobile]}>
+                  Tour de table :{' '}
+                  <Text style={[styles.playerNameHighlight, { color: themeColor }]}>
+                    tout le monde donne son avis !
+                  </Text>
+                  {displayedPlayer ? (
+                    <Text style={{ color: colors.textSecondary }}> ({displayedPlayer} commence 🎤)</Text>
+                  ) : (
+                    ' 🔥'
+                  )}
+                </Text>
+              </View>
+            ) : displayedPlayer ? (
               <View style={styles.playerCallout}>
                 <Text style={styles.playerEmoji}>🎤</Text>
                 <Text style={[styles.playerLabel, !isDesktop && styles.playerLabelMobile]}>

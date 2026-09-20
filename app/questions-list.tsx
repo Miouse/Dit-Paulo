@@ -24,7 +24,7 @@ const HEADER_HEIGHT = 72;
 
 // ─── Ordre des catégories ──────────────────────────────────────────────────────
 const CATEGORY_ORDER: QuestionCategory[] = [
-  'fun', 'lifestyle', 'flirt', 'relationships', 'personality', 'memories',
+  'fun', 'lifestyle', 'flirt', 'situationship', 'relationships', 'personality', 'memories',
   'future', 'dreams', 'hypothetical', 'debate', 'philosophy', 'hot', 'gossip',
 ];
 

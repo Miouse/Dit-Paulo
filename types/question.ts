@@ -14,6 +14,7 @@ export type QuestionCategory =
   | 'debate'
   | 'philosophy'
   | 'gossip'
+  | 'situationship'
   | 'hot';
 
 export interface CategoryConfig {
@@ -66,6 +67,14 @@ export const CATEGORY_CONFIGS: Record<QuestionCategory, CategoryConfig> = {
     color: '#AF52DE',
     badgeBg: 'rgba(175, 82, 222, 0.15)',
   },
+  situationship: {
+    id: 'situationship',
+    label: 'Situations ambiguës',
+    emoji: '🌪️',
+    description: 'Ambiguïté, non-dits, crushs compliqués et relations sans étiquette',
+    color: '#FF5E7E',
+    badgeBg: 'rgba(255, 94, 126, 0.15)',
+  },
   personality: {
     id: 'personality',
     label: 'Personnalité & Vrai Toi',
@@ -76,9 +85,9 @@ export const CATEGORY_CONFIGS: Record<QuestionCategory, CategoryConfig> = {
   },
   debate: {
     id: 'debate',
-    label: 'Débat & Opinions',
-    emoji: '⚖️',
-    description: 'Divergences d\'avis, prises de position et arguments enflammés',
+    label: 'Tour de Table & Débats',
+    emoji: '🗣️',
+    description: 'Tout le monde donne son avis ! Pas de spectateur, chacun prend position',
     color: '#FFD60A',
     badgeBg: 'rgba(255, 214, 10, 0.15)',
   },

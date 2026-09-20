@@ -42,14 +42,14 @@ export const CATEGORY_PRESETS: CategoryPreset[] = [
     label: 'Soirée & Potins',
     emoji: '🎉',
     description: 'Fun, potins croustillants, débats animés et dilemmes fous',
-    categories: ['fun', 'gossip', 'debate', 'hypothetical'],
+    categories: ['fun', 'gossip', 'debate', 'hypothetical', 'situationship'],
   },
   {
     id: 'date',
     label: 'Date & Flirt',
     emoji: '😏',
     description: 'Séduction, complicité amoureuse et tension positive',
-    categories: ['flirt', 'relationships', 'hot'],
+    categories: ['flirt', 'relationships', 'situationship', 'hot'],
   },
   {
     id: 'chill',
