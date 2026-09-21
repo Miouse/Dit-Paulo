@@ -86,8 +86,15 @@ export default function FavoritesScreen() {
             Pendant une partie, touche l'icône ❤️ sur une question pour l'enregistrer ici.
           </Text>
           <PrimaryButton
-            label="Découvrir des questions"
-            onPress={() => router.push('/setup/mode')}
+            label="Lancer une partie 🚀"
+            onPress={() => router.push('/setup/categories')}
+            style={{ width: '100%', marginBottom: spacing.sm }}
+          />
+          <PrimaryButton
+            label="Explorer la galerie de cartes 🃏"
+            variant="secondary"
+            onPress={() => router.push('/cards')}
+            style={{ width: '100%' }}
           />
         </View>
       )}

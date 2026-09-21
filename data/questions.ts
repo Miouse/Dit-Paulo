@@ -1584,7 +1584,7 @@ export const questions: Question[] = [
   },
   {
     id: 'fun_024',
-    text: "Si tu devais résumer ta dernière semaine avec un seul emoji, lequel choisirais-tu et pourquoi ?",
+    text: "Si tu devais résumer ta dernière semaine avec des emojis, lesquels choisirais-tu et pourquoi ?",
     modes: ['friends', 'party'],
     category: 'fun',
     minPlayers: 2,
