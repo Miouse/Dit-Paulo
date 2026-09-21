@@ -78,15 +78,37 @@ export const tinderSortService = {
       const raw = await AsyncStorage.getItem(TINDER_SORT_STORAGE_KEY);
       if (raw) {
         const parsed: TinderSortState = JSON.parse(raw);
+        const validIds = new Set(questions.map((q) => q.id));
+
+        const rawKept = Array.isArray(parsed.keptIds) ? parsed.keptIds : [];
+        const rawRejected = Array.isArray(parsed.rejectedIds) ? parsed.rejectedIds : [];
+        const rawHistory = Array.isArray(parsed.history) ? parsed.history : [];
+
+        // Éliminer les identifiants orphelins (questions définitivement supprimées du code)
+        const cleanKept = rawKept.filter((id) => validIds.has(id));
+        const cleanRejected = rawRejected.filter((id) => validIds.has(id));
+        const cleanHistory = rawHistory.filter((h) => validIds.has(h.id));
+
         memoryCache = {
-          keptIds: Array.isArray(parsed.keptIds) ? parsed.keptIds : [],
-          rejectedIds: Array.isArray(parsed.rejectedIds) ? parsed.rejectedIds : [],
-          history: Array.isArray(parsed.history) ? parsed.history : [],
+          keptIds: cleanKept,
+          rejectedIds: cleanRejected,
+          history: cleanHistory,
           editedQuestions:
             parsed.editedQuestions && typeof parsed.editedQuestions === 'object'
               ? parsed.editedQuestions
               : {},
         };
+
+        // Si des cartes supprimées ont été nettoyées, sauvegarder le nouvel état propre
+        if (
+          cleanKept.length !== rawKept.length ||
+          cleanRejected.length !== rawRejected.length ||
+          cleanHistory.length !== rawHistory.length
+        ) {
+          AsyncStorage.setItem(TINDER_SORT_STORAGE_KEY, JSON.stringify(memoryCache)).catch((e) =>
+            console.error('Erreur lors de la sauvegarde du nettoyage Tinder:', e)
+          );
+        }
 
         // Appliquer immédiatement les textes modifiés à la collection globale questions
         Object.entries(memoryCache.editedQuestions).forEach(([id, text]) => {
