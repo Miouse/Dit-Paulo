@@ -1584,7 +1584,7 @@ export const questions: Question[] = [
   },
   {
     id: 'fun_024',
-    text: "Si tu devais décrire ta dernière semaine avec un emoji, lequel et pourquoi ?",
+    text: "Si tu devais résumer ta dernière semaine avec un seul emoji, lequel choisirais-tu et pourquoi ?",
     modes: ['friends', 'party'],
     category: 'fun',
     minPlayers: 2,
@@ -1930,7 +1930,7 @@ export const questions: Question[] = [
   },
   {
     id: 'nof_023',
-    text: "Quelle personne ici présente penses-tu être la plus hypocrite par pure politesse ?",
+    text: "Qui autour de cette table est, selon toi, la personne la plus hypocrite par simple politesse ?",
     modes: ['nofilter', 'party'],
     category: 'personality',
     minPlayers: 2,
@@ -2551,7 +2551,7 @@ export const questions: Question[] = [
   },
   {
     id: 'nof_115',
-    text: "Situation : On te donne le choix entre connaître tous les mensonges qu'on t'a dits dans ta vie ou tous les compliments sincères qu'on t'a faits. Tu choisis quoi ?",
+    text: "Situation : Si tu avais le choix entre connaître tous les mensonges qu'on t'a racontés dans ta vie ou tous les compliments sincères qu'on t'a faits, tu choisirais quoi ?",
     modes: ['nofilter', 'deep', 'party'],
     category: 'personality',
     minPlayers: 2,
@@ -3157,7 +3157,7 @@ export const questions: Question[] = [
   },
   {
     id: 'gossip_017',
-    text: "Imagine le secret le plus inavouable que {player} soupçonne chez {otherPlayer} ?",
+    text: "{player}, d'après toi, quel est le secret le plus inavouable que cache {otherPlayer} ?",
     modes: ['nofilter', 'party', 'deep'],
     category: 'gossip',
     minPlayers: 2,
@@ -3171,7 +3171,7 @@ export const questions: Question[] = [
   },
   {
     id: 'gossip_019',
-    text: "Si tu devait attribuer un rôle dans un film à {otherPlayer}, ce serait le héros, le méchant ou le comique ?",
+    text: "Si tu devais attribuer un rôle dans un film à {otherPlayer}, ce serait le héros, le méchant ou l'élément comique ?",
     modes: ['nofilter', 'friends', 'party'],
     category: 'gossip',
     minPlayers: 2,
@@ -3192,14 +3192,14 @@ export const questions: Question[] = [
   },
   {
     id: 'gossip_023',
-    text: "{player}, si tu devais donner une note sur les capacités séductrices sur 10 de {otherPlayer}, quelles seraient-elles ?",
+    text: "{player}, sur une échelle de 1 à 10, quelle note donnerais-tu au jeu de séduction de {otherPlayer} ?",
     modes: ['nofilter', 'date', 'couple', 'party'],
     category: 'gossip',
     minPlayers: 2,
   },
   {
     id: 'gossip_024',
-    text: "{player}, est-ce que tu penses que {otherPlayer} ferait un bon partenaire de karaoké en duo ? Si oui PROUVEZ-LE !",
+    text: "{player}, est-ce que tu penses que {otherPlayer} ferait un bon partenaire de karaoké en duo ? Si oui, prouvez-le en direct !",
     modes: ['nofilter', 'party', 'friends'],
     category: 'gossip',
     minPlayers: 2,
@@ -3227,7 +3227,7 @@ export const questions: Question[] = [
   },
   {
     id: 'gossip_029',
-    text: "{player}, si tu étais bloqué(e) dans un ascenseur pendant 6 heures avec {otherPlayer}, raconte nous la suite ??",
+    text: "{player}, si tu étais bloqué(e) dans un ascenseur pendant 6 heures avec {otherPlayer}, raconte-nous la suite !",
     modes: ['nofilter', 'deep', 'friends'],
     category: 'gossip',
     minPlayers: 2,
@@ -3360,7 +3360,7 @@ export const questions: Question[] = [
   },
   {
     id: 'gossip_048',
-    text: "{player}, quel est le pire défaut d'orgueil ou d'égo de {otherPlayer} selon toi ?",
+    text: "{player}, selon toi, quelle est la plus grande marque d'orgueil ou d'ego chez {otherPlayer} ?",
     modes: ['nofilter', 'friends', 'party'],
     category: 'gossip',
     minPlayers: 2,
@@ -3850,7 +3850,7 @@ export const questions: Question[] = [
   },
   {
     id: 'gossip_123',
-    text: "{player}, penses-tu que {otherPlayer} ferait passer ses amis avant son/sa partenaire amoureux(se) ?",
+    text: "{player}, penses-tu que {otherPlayer} ferait passer ses amis avant son ou sa partenaire ?",
     modes: ['nofilter'],
     category: 'debate',
     minPlayers: 2,
@@ -3878,7 +3878,7 @@ export const questions: Question[] = [
   },
   {
     id: 'gossip_127',
-    text: "{player}, penses-tu que {otherPlayer} serait capable d'abandonner son job de rêve pour sauver une amitié ?",
+    text: "{player}, penses-tu que {otherPlayer} sacrifierait le job de ses rêves pour préserver une amitié ?",
     modes: ['nofilter', 'deep'],
     category: 'debate',
     minPlayers: 2,
@@ -4184,7 +4184,7 @@ export const questions: Question[] = [
   },
   {
     id: 'phi_012',
-    text: "Tu penses qu'on peut être moral sans religion ou sans croyance spirituelle ?",
+    text: "Tu penses qu'on peut avoir de vrais principes moraux sans aucune religion ni croyance spirituelle ?",
     modes: ['deep', 'friends', 'party'],
     category: 'philosophy',
     minPlayers: 2,
@@ -4212,7 +4212,7 @@ export const questions: Question[] = [
   },
   {
     id: 'phi_016',
-    text: "Il y a-t-il un poème, une citation ou une phrase littéraire qui te touche profondément ? Pourquoi ?",
+    text: "Y a-t-il un poème, une citation ou une phrase littéraire qui te touche profondément ? Pourquoi ?",
     modes: ['deep', 'couple', 'date'],
     category: 'philosophy',
     minPlayers: 2,
@@ -4226,7 +4226,7 @@ export const questions: Question[] = [
   },
   {
     id: 'phi_018',
-    text: "Tu penses que la beauté est objective ou qu'elle dépend entièrement du regard de celui qui regarde ?",
+    text: "Tu penses que la beauté est universelle, ou qu'elle dépend uniquement des yeux de celui qui la contemple ?",
     modes: ['friends', 'deep', 'date', 'party'],
     category: 'philosophy',
     minPlayers: 2,
