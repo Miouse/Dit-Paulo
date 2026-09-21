@@ -10,7 +10,9 @@ import { QuestionCard } from '../../components/QuestionCard';
 import { ScreenContainer } from '../../components/ScreenContainer';
 import { colors, radii, spacing, typography } from '../../constants/theme';
 import { useGame } from '../../context/GameContext';
+import type { Gage } from '../../data/gages';
 import { favoritesService } from '../../services/favoritesService';
+import { gagesService } from '../../services/gagesService';
 import { jokeEngine, type JokeEffect } from '../../services/jokeEngine';
 import { questionEngine } from '../../services/questionEngine';
 import { CATEGORY_CONFIGS, type Player, type QuestionCategory } from '../../types/game';
@@ -60,6 +62,12 @@ export default function GameScreen() {
   const [timerModeEnabled, setTimerModeEnabled] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
   const [showGageAlert, setShowGageAlert] = useState(false);
+  const [currentGage, setCurrentGage] = useState<Gage | null>(null);
+
+  const rollGage = async () => {
+    const g = await gagesService.getRandomGage();
+    setCurrentGage(g);
+  };
 
   // Classement des joueurs par score décroissant
   const rankedPlayers = [...state.players].sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
@@ -117,6 +125,7 @@ export default function GameScreen() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
+          rollGage();
           setShowGageAlert(true);
           return 0;
         }
@@ -574,15 +583,30 @@ export default function GameScreen() {
             <Text style={styles.gageEmoji}>⏱️</Text>
             <Text style={styles.gageTitle}>TROP LENT !</Text>
             <Text style={styles.gageMessage}>
-              {effectivePlayer?.name ?? 'Le joueur'} n'a pas répondu à temps.{`\n`}Un gage lui est attribué !
+              {effectivePlayer?.name ?? 'Le joueur'} n'a pas répondu à temps.{'\n'}Voici son gage :
             </Text>
+
+            {currentGage && (
+              <View style={styles.gageBox}>
+                <Text style={styles.gageBoxText}>{currentGage.text}</Text>
+              </View>
+            )}
+
+            <TouchableOpacity
+              onPress={rollGage}
+              style={styles.rerollGageButton}
+              accessibilityLabel="Tirer un autre gage"
+            >
+              <Text style={styles.rerollGageText}>🎲 Tirer un autre gage</Text>
+            </TouchableOpacity>
+
             <PrimaryButton
               label="Gage accepté → Joueur suivant"
               onPress={() => {
                 setShowGageAlert(false);
                 handleUnsatisfactoryResponse();
               }}
-              style={{ width: '100%' }}
+              style={{ width: '100%', marginBottom: spacing.xs }}
             />
             <TouchableOpacity
               onPress={() => {
@@ -1403,6 +1427,32 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     textAlign: 'center',
     lineHeight: typography.sizes.md * typography.lineHeights.relaxed,
+  },
+  gageBox: {
+    width: '100%',
+    backgroundColor: 'rgba(255, 159, 10, 0.1)',
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 159, 10, 0.35)',
+    padding: spacing.md,
+    marginVertical: spacing.xs,
+  },
+  gageBoxText: {
+    color: colors.textPrimary,
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.md,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  rerollGageButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  rerollGageText: {
+    color: '#FF9F0A',
+    fontWeight: typography.weights.semibold,
+    fontSize: typography.sizes.sm,
   },
   historyCard: {
     width: '100%',

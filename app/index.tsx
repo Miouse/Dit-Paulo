@@ -226,10 +226,28 @@ export default function HomeScreen() {
               </Text>
             </TouchableOpacity>
 
+            {/* Cartes Gages */}
+            <TouchableOpacity
+              onPress={() => router.push('/gages')}
+              style={[
+                styles.gridCard,
+                { borderColor: 'rgba(255, 159, 10, 0.4)', backgroundColor: 'rgba(255, 159, 10, 0.05)' },
+              ]}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.gridIconCircle, { backgroundColor: 'rgba(255, 159, 10, 0.15)' }]}>
+                <Text style={styles.gridCardEmoji}>⏱️</Text>
+              </View>
+              <Text style={[styles.gridCardTitle, { color: '#FF9F0A' }]}>Cartes Gages</Text>
+              <Text style={styles.gridCardDesc}>Patate Chaude & Défis</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.gridRow}>
             {/* Liste complète */}
             <TouchableOpacity
               onPress={() => router.push('/questions-list')}
-              style={styles.gridCard}
+              style={[styles.gridCard, { flex: 1 }]}
               activeOpacity={0.8}
             >
               <View style={[styles.gridIconCircle, { backgroundColor: 'rgba(100, 210, 255, 0.15)' }]}>

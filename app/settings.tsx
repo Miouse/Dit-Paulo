@@ -354,6 +354,26 @@ export default function SettingsScreen() {
             )}
           </View>
 
+          {/* Section Cartes Gages */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>CARTES GAGES (PATATE CHAUDE) ⏱️</Text>
+            <TouchableOpacity
+              onPress={() => router.push('/gages')}
+              style={[
+                styles.dangerCard,
+                {
+                  borderColor: 'rgba(255, 159, 10, 0.4)',
+                  backgroundColor: 'rgba(255, 159, 10, 0.08)',
+                  marginBottom: spacing.xs,
+                },
+              ]}
+            >
+              <Text style={[styles.dangerText, { color: '#FF9F0A' }]}>
+                ⏱️ Voir et créer des cartes gages
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Card À propos */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>À PROPOS</Text>
