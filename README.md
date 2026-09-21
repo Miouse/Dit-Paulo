@@ -10,10 +10,11 @@ Application mobile moderne de cartes de questions pour animer vos soirées, rend
 
 **Dit-Paulo ?** est conçu pour briser la glace, approfondir les relations et transformer n'importe quelle soirée en un moment inoubliable.
 
-* 🃏 **Plus de 545 questions uniques** intégrées localement en français.
+* 🃏 **Près de 700 questions uniques** intégrées localement en français.
 * 👥 **Prénoms personnalisés** : les questions ciblent directement les joueurs de la partie.
-* ⚖️ **Vote du groupe & Gamification** : validez les réponses sincères ou punissez la langue de bois.
-* 💣 **Cartes Extrêmes & Potins** surprises qui pimentent le jeu.
+* ⚖️ **Vote du groupe & Points optionnels** : validez les réponses sincères (+1 Pt) ou punissez la langue de bois (0 Pt).
+* 🎭 **14 Catégories thématiques & 5 Préréglages** : ambiance chill, soirée potins, date romantique ou 100% sans filtre.
+* 🃏 **Tri Tinder & Decks Custom** : swipez pour exclure des cartes et créez vos propres questions privées.
 * 📶 **100% Hors-ligne** : jouable partout sans connexion internet (plage, bar, camping, mode avion).
 
 ---
@@ -25,61 +26,61 @@ L'application remplace automatiquement les balises `{Joueur1}`, `{Joueur2}` par 
 > *Exemple : « Est-ce que tu penses que **Sarah** cacherait un corps pour **Maxime** ? »*
 
 ### 2. ⭐ Système de Points & Validation du Groupe
-Après chaque question, le groupe juge la sincérité du joueur interrogé :
-* **👍 Validé (+10 Pts / +25 Pts pour Extrême)** : Le joueur a répondu franchement et gagne des points.
-* **👎 Langue de bois (0 Pt)** : Réponse esquivée ou non convaincante !
+Le calcul des points est **optionnel** : vous pouvez jouer pour la gagne ou en mode détendu sans compétition.
 
-### 3. 💣 Cartes "Extrême" & "Extrême Potin"
-Des cartes surprises à fort impact apparaissent aléatoirement durant la partie : anecdotes choc, révélations piquantes et dossiers de soirée.
+Lorsque les points sont activés :
+* **👍 Validé (+1 Pt)** : Le joueur a répondu avec franchise et sincérité. Il marque 1 point.
+* **🙈 Langue de bois / Passe (0 Pt)** : Réponse esquivée, botte en touche ou passage de tour.
+
+En mode sans points, le groupe fait défiler les cartes librement à son propre rythme.
+
+### 3. 🔥 Catégories Piquantes & Vérités Sans Filtre
+Selon les catégories activées en début de partie, des questions à fort impact surgissent au fil de la session : potins de soirée, dossiers inavouables, dilemmes impossibles et vérités cash pour secouer la tablée.
 
 ### 4. 🎟️ Double Système de Jokers (Achat avec Points)
-Une question est trop indiscrète ? Le joueur peut utiliser ses points accumulés pour esquiver :
-* **🎲 Joker Hasard (-10 Pts)** : Déclenche une roulette animée qui désigne un autre joueur au hasard pour répondre à sa place !
-* **🎯 Joker Victime (-15 Pts)** : Permet de choisir directement le joueur du groupe qui devra répondre à la question.
+Lorsque les points sont activés, un joueur interrogé peut dépenser ses points accumulés pour esquiver une question trop indiscrète :
+* **🎲 Joker Hasard (-10 Pts)** : Déclenche une roulette animée qui désigne un autre joueur au hasard pour répondre à sa place.
+* **🎯 Joker Cible / Victime (-15 Pts)** : Permet de choisir directement le joueur du groupe qui devra répondre à la question.
 
 ### 5. ⏱️ Mode Timer "Patate Chaude" (15s sous Pression)
-Activez le mode chrono : le joueur a **15 secondes** montre en main pour répondre. Si le temps s'écoule avant, une alerte retentit et un **gage aléatoire** lui est attribué !
+Activez le mode chrono à tout moment : le joueur interrogé dispose de **15 secondes** montre en main pour répondre. Si la jauge atteint zéro avant la fin de sa réponse, une alerte retentit et un **gage aléatoire** lui est immédiatement infligé !
 
-### 6. 🏆 Podium Interactif & Médailles
+### 6. 🃏 Tri des Cartes façon Tinder (Swipe)
+Personnalisez votre jeu avant de lancer la partie :
+* **Swipe à droite** : Garder la carte dans la pioche.
+* **Swipe à gauche** : Exclure définitivement la carte du jeu.
+* **Édition directe** : Modifiez le texte de n'importe quelle question pour l'adapter à votre groupe d'amis.
+
+### 7. 🎨 Créateur de Decks Personnalisés & Partage
+Créez vos propres cartes et dossiers d'amis :
+* Rédigez vos questions privées et inside jokes avec le support des prénoms dynamiques.
+* Exportez et importez vos decks en un clic au format JSON pour les échanger facilement entre téléphones.
+
+### 8. 🏆 Podium Interactif & Médailles
 À la fin de la partie ou lors de la consultation des scores, un podium interactif célèbre les gagnants :
 * 🥇 **Médaille d'or**
 * 🥈 **Médaille d'argent**
 * 🥉 **Médaille de bronze**
 
-### 7. 🃏 Pioche & Défausse 3D
-Visualisez l'état de votre paquet en temps réel grâce à la pile de cartes interactive :
-* Compteur de cartes restantes dans la pioche.
-* Compteur de cartes défaussées.
-* Détection automatique de la fin du deck avec option de remélanger.
-
-### 8. ❤️ Favoris & Gestion Locale
-* Enregistrez vos questions préférées d'un simple tap sur le cœur.
-* Retrouvez-les dans l'écran **Favoris** persistant via `AsyncStorage`.
-* Possibilité de réinitialiser la pioche depuis les paramètres.
+### 9. ❤️ Favoris & Historique de Partie
+* Enregistrez vos questions préférées d'un simple tap sur le cœur pour les retrouver dans l'écran **Favoris**.
+* Consultez l'historique complet de la partie en cours pour revoir les cartes passées et les validations.
 
 ---
 
-## 🕹️ Modes de Jeu & Niveaux d'Intensité
+## 🕹️ Catégories & Préréglages d'Ambiance
 
-### Les 5 Modes
+Choisissez parmi **14 catégories thématiques** combinables à volonté, ou sélectionnez un préréglage d'ambiance en un tap :
 
-| Mode | Emoji | Description |
-|---|:---:|---|
-| **Entre amis** | 🍻 | Anecdotes, débats, souvenirs et fous rires |
-| **Date / Crush** | 😏 | Briser la glace, découverte mutuelle et flirt subtil |
-| **Couple** | ❤️ | Complicité, projets, intimité et tendresse |
-| **Deep mais chill** | 🧠 | Philosophie de vie, ambitions, vulnérabilité et rêves |
-| **Soirée** | 🎉 | Rythme rapide, cartes piquantes, dilemmes et vérités |
+### Les Préréglages Rapides
 
-### Les Niveaux d'Intensité
-
-| Niveau | Emoji | Nom | Ambiance |
-|:---:|:---:|---|---|
-| **1** | 🧊 | **Icebreaker** | Léger, facile pour démarrer |
-| **2** | 👀 | **Curieux** | On commence à creuser |
-| **3** | 🫶 | **Personnel** | Confidences et anecdotes vraies |
-| **4** | 😏 | **Flirt** | Séduction, tension et sous-entendus |
-| **5** | 🧠 | **Deep** | Vérités intenses et introspectives |
+| Préréglage | Emoji | Ambiance | Catégories incluses |
+|---|:---:|---|---|
+| **Grand Mix** | 🎲 | Toutes les cartes | L'ensemble des 14 catégories actives |
+| **Soirée & Potins** | 🎉 | Fous rires et révélations | Fun, Potins, Débats, Dilemmes, Situationship |
+| **Date & Flirt** | 😏 | Séduction et complicité | Flirt, Relations, Situationship, Hot |
+| **Chill & Deep** | 🧠 | Discussions profondes | Personnalité, Souvenirs, Futur, Philosophie, Rêves |
+| **100% Cash & Hot** | 🔥 | Vérités crues et piquant | Potins, Situationship, Hot, Dilemmes |
 
 ---
 
@@ -107,15 +108,16 @@ Dit-Paul/
 │   ├── _layout.tsx             # Layout racine (thème sombre + GameProvider)
 │   ├── index.tsx               # Écran d'accueil (Hero, animations, CTA)
 │   ├── cards.tsx               # Visualiseur de cartes du deck
-│   ├── questions-list.tsx      # Explorateur complet des questions
+│   ├── custom-cards.tsx        # Créateur et import/export de cartes personnalisées
 │   ├── favorites.tsx           # Écran des questions favorites
+│   ├── questions-list.tsx      # Explorateur complet des questions
 │   ├── settings.tsx            # Paramètres et remise à zéro
+│   ├── tinder-sort.tsx         # Tri et personnalisation des cartes façon Tinder
 │   ├── game/
 │   │   └── index.tsx           # Moteur de jeu (cartes, jokers, timer, podium)
 │   └── setup/
-│       ├── mode.tsx            # Choix du mode de jeu
-│       ├── players.tsx         # Saisie et gestion des prénoms (min 2)
-│       └── intensity.tsx       # Choix de l'intensité
+│       ├── categories.tsx      # Choix des catégories et préréglages d'ambiance
+│       └── players.tsx         # Saisie des prénoms (min 2) et points optionnels
 │
 ├── assets/                     # Icônes 3D, splash screen et fonds d'écran
 ├── components/                 # Composants UI réutilisables
@@ -132,10 +134,12 @@ Dit-Paul/
 ├── context/
 │   └── GameContext.tsx         # État global du jeu (session, scores, historique)
 ├── data/
-│   └── questions.ts            # Base de données locale de 545+ questions
+│   └── questions.ts            # Base de données locale de près de 700 questions
 ├── services/
 │   ├── questionEngine.ts       # Algorithme anti-répétition et filtrage
 │   ├── jokeEngine.ts           # Moteur d'effets et de gages aléatoires
+│   ├── customCardsService.ts   # Gestionnaire de decks custom et import/export JSON
+│   ├── tinderSortService.ts    # Gestionnaire du tri, exclusion et édition Tinder
 │   ├── favoritesService.ts     # Gestionnaire AsyncStorage des favoris
 │   ├── playersService.ts       # Sauvegarde et historique des joueurs
 │   └── seenQuestionsService.ts # Suivi des cartes déjà jouées
@@ -150,11 +154,11 @@ Dit-Paul/
 
 ## 🚀 Démarrage Rapide (Développement)
 
-### Prérequis
-* [Node.js](https://nodejs.org) v18 ou supérieur
-* [Expo Go](https://expo.dev/go) sur smartphone OU un navigateur web
+### Lanceurs 1-clic (Recommandé pour les potes)
+* **Sur Mac :** Double-cliquez sur `LANCER-LE-JEU-MAC.command`.
+* **Sur Windows :** Double-cliquez sur `LANCER-LE-JEU-WINDOWS.bat`.
 
-### Installation
+### Installation manuelle
 ```bash
 # 1. Cloner le dépôt
 git clone https://github.com/<votre-pseudo>/Dit-Paulo.git
@@ -194,16 +198,18 @@ git push origin v1.0.0
 
 ## 🗺 Roadmap
 
-- [x] Base de 545+ questions catégorisées et rédigées en français
+- [x] Base de près de 700 questions catégorisées et rédigées en français
 - [x] Injection dynamique des prénoms des joueurs
-- [x] Système de points et validation des réponses
-- [x] Double Joker (Roulette Hasard animée & Choix de la Victime)
-- [x] Timer "Patate Chaude" (15s) avec gages
+- [x] Système de points optionnel (+1 Pt) et validation des réponses
+- [x] Double Joker (Roulette Hasard animée & Choix de la Cible)
+- [x] Timer "Patate Chaude" (15s) avec gages aléatoires
+- [x] Tri et exclusion des cartes façon Tinder (Swipe & édition de cartes)
+- [x] Créateur et partage de decks de cartes personnalisées (import / export JSON)
+- [x] Lanceurs 1-clic pour Mac et Windows
 - [x] Podium interactif de fin de partie avec médailles
 - [x] Nouveau logo & icône d'application 3D néon violet
 - [x] Configuration Android (`app.json`) et packaging `com.ditpaulo.game`
 - [x] Workflow GitHub Actions pour compilation APK automatique & Releases
-- [ ] 🎨 Créateur de Deck Personnalisé (Inside Jokes entre amis)
 - [ ] 🔊 Design Sonore & Bruitages SFX immersifs
 - [ ] 📸 Générateur de Carte pour Story (Instagram, Snapchat, TikTok)
 - [ ] 🌐 Synchronisation en ligne optionnelle (Supabase)
