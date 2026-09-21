@@ -434,7 +434,7 @@ export default function CustomCardsScreen() {
                         ]}
                       >
                         <Text style={[styles.cardBadgeText, { color: catMeta.color }]}>
-                          {catMeta.emoji} {catMeta.label}
+                          {catMeta.emoji ? `${catMeta.emoji} ` : ''}{catMeta.label}
                         </Text>
                       </View>
 

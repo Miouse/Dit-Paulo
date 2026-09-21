@@ -38,7 +38,7 @@ export const CATEGORY_CONFIGS: Record<QuestionCategory, CategoryConfig> = {
   gossip: {
     id: 'gossip',
     label: 'Potins de Soirée',
-    emoji: '🔥',
+    emoji: '',
     description: 'Révélations piquantes, anecdotes croustillantes et petites vérités',
     color: '#FF2D55',
     badgeBg: 'rgba(255, 45, 85, 0.15)',

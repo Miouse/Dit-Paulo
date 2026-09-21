@@ -47,7 +47,7 @@ const QuestionRow = React.memo(({ index, id, text, category }: QuestionRowProps)
       {/* Badge Catégorie */}
       <View style={[styles.categoryBadge, { backgroundColor: meta.badgeBg || meta.color + '22', borderColor: meta.color + '55' }]}>
         <Text style={[styles.categoryBadgeText, { color: meta.color }]}>
-          {meta.emoji} {meta.label}
+          {meta.emoji ? `${meta.emoji} ` : ''}{meta.label}
         </Text>
       </View>
 
@@ -210,7 +210,7 @@ export default function QuestionsListScreen() {
               onPress={() => setSelectedCategoryFilter(active ? 'all' : cat)}
             >
               <Text style={[styles.filterChipText, active && { color: cfg.color }]}>
-                {cfg.emoji} {cfg.label}
+                {cfg.emoji ? `${cfg.emoji} ` : ''}{cfg.label}
               </Text>
             </TouchableOpacity>
           );

@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   dreams: 'Rêve 🌟',
   flirt: 'Flirt 😏',
   lifestyle: 'Mode de vie 🌿',
-  gossip: 'Extrême Potin 🔥',
+  gossip: 'Potins de Soirée',
   philosophy: 'Philosophie 🧠',
   hot: 'Hot 🌶️',
 };

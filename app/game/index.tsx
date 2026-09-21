@@ -813,7 +813,7 @@ export default function GameScreen() {
                       <View style={styles.historyItemHeader}>
                         <View style={[styles.historyBadge, { backgroundColor: cfg.badgeBg, borderColor: cfg.color }]}>
                           <Text style={[styles.historyBadgeText, { color: cfg.color }]}>
-                            {cfg.emoji} {cfg.label}
+                            {cfg.emoji ? `${cfg.emoji} ` : ''}{cfg.label}
                           </Text>
                         </View>
                         <Text style={styles.historyItemPlayer}>

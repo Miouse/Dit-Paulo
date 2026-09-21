@@ -72,7 +72,7 @@ export default function CardsGalleryScreen() {
           <View style={styles.badgeRow}>
             <View style={[styles.categoryBadge, { borderColor: catConfig.color, backgroundColor: catConfig.badgeBg }]}>
               <Text style={[styles.categoryBadgeText, { color: catConfig.color }]}>
-                {catConfig.emoji} {catConfig.label}
+                {catConfig.emoji ? `${catConfig.emoji} ` : ''}{catConfig.label}
               </Text>
             </View>
             {item.isCustom && (

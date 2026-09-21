@@ -127,7 +127,8 @@ export function QuestionCard({
   // Partage de la question au format élégant
   const handleShare = async () => {
     try {
-      const shareMessage = `💬 Dit-Paulo ? [${catConfig.emoji} ${catConfig.label}]\n\n« ${formattedText} »\n\nTu répondrais quoi ? 👀✨`;
+      const categoryTag = catConfig.emoji ? `${catConfig.emoji} ${catConfig.label}` : catConfig.label;
+      const shareMessage = `💬 Dit-Paulo ? [${categoryTag}]\n\n« ${formattedText} »\n\nTu répondrais quoi ? 👀✨`;
       await Share.share({
         message: shareMessage,
         title: 'Dit-Paulo ?',
@@ -175,7 +176,7 @@ export function QuestionCard({
           <View style={styles.badgeRow}>
             <View style={[styles.badge, { borderColor: themeColor, backgroundColor: catConfig.badgeBg }]}>
               <Text style={[styles.badgeText, { color: themeColor }]}>
-                {catConfig.emoji} {catConfig.label}
+                {catConfig.emoji ? `${catConfig.emoji} ` : ''}{catConfig.label}
               </Text>
             </View>
 
