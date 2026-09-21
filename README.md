@@ -216,10 +216,11 @@ git push origin v1.0.0
 
 ---
 
-## 📄 Licence
+## 📄 Licence & Propriété Intellectuelle
 
-Distribué sous la licence **MIT**. Libre d'utilisation et de modification.
+Projet propriétaire — **Tous droits réservés © 2026 Dit-Paulo**.
+Toute reproduction, copie, modification ou exploitation commerciale du code source et des questions sans autorisation préalable est strictement interdite.
 
 ---
 
-*Fait avec ❤️ pour que les conversations qui comptent puissent enfin commencer.*
+*Fait pour que les conversations qui comptent puissent enfin commencer.*
