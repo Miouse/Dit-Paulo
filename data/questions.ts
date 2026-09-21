@@ -1341,7 +1341,7 @@ export const questions: Question[] = [
   },
   {
     id: 'fli_015',
-    text: "C'est quoi le petit détail bizarre qui te rend quelqu'un encore plus attirant(e) ?",
+    text: "Y-a-t-il un petit détail bizarre qui rend quelqu'un encore plus attirant(e) ?",
     modes: ['date', 'couple'],
     category: 'flirt',
     minPlayers: 2,

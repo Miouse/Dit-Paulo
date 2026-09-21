@@ -18,6 +18,7 @@ import { useGame } from '../context/GameContext';
 import { useTheme } from '../context/ThemeContext';
 import { questions } from '../data/questions';
 import { customCardsService } from '../services/customCardsService';
+import { flaggedQuestionsService } from '../services/flaggedQuestionsService';
 import { tinderSortService } from '../services/tinderSortService';
 
 export default function HomeScreen() {
@@ -29,6 +30,7 @@ export default function HomeScreen() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [tinderStats, setTinderStats] = useState({ kept: 0, rejected: 0 });
   const [customCardsCount, setCustomCardsCount] = useState(0);
+  const [flaggedCount, setFlaggedCount] = useState(0);
 
   useEffect(() => {
     tinderSortService.getSortState().then((s) => {
@@ -41,9 +43,13 @@ export default function HomeScreen() {
     customCardsService.getCustomCards().then((c) => setCustomCardsCount(c.length));
     const unsubCards = customCardsService.subscribe((c) => setCustomCardsCount(c.length));
 
+    flaggedQuestionsService.getFlaggedQuestions().then((list) => setFlaggedCount(list.length));
+    const unsubFlagged = flaggedQuestionsService.subscribe((list) => setFlaggedCount(list.length));
+
     return () => {
       unsubTinder();
       unsubCards();
+      unsubFlagged();
     };
   }, []);
 
@@ -282,6 +288,35 @@ export default function HomeScreen() {
               <Text style={styles.actionPillTitle}>Thèmes ({theme.name.split(' ')[0]})</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Bandeau discret si des questions ont été signalées pendant une partie */}
+          {flaggedCount > 0 && (
+            <TouchableOpacity
+              onPress={() => router.push('/flagged-questions')}
+              style={[
+                styles.flaggedNoticeCard,
+                {
+                  borderColor: 'rgba(255, 59, 48, 0.45)',
+                  backgroundColor: 'rgba(255, 59, 48, 0.08)',
+                },
+              ]}
+              activeOpacity={0.8}
+              accessibilityLabel="Voir les questions à modifier"
+            >
+              <View style={styles.flaggedNoticeLeft}>
+                <Text style={styles.flaggedNoticeEmoji}>🚩</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.flaggedNoticeTitle}>
+                    {flaggedCount} question{flaggedCount > 1 ? 's' : ''} signalée{flaggedCount > 1 ? 's' : ''} à modifier
+                  </Text>
+                  <Text style={styles.flaggedNoticeSubtitle}>
+                    Touchez pour relire, modifier ou exporter le code
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.flaggedNoticeArrow}>➔</Text>
+            </TouchableOpacity>
+          )}
 
           {/* ─── État du Paquet de Cartes ────────────────────────────────── */}
           <View style={styles.statsCard}>
@@ -703,5 +738,40 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.semibold,
     color: colors.textSecondary,
+  },
+  flaggedNoticeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.xl,
+    borderWidth: 1.5,
+    marginTop: spacing.xs,
+    gap: spacing.sm,
+  },
+  flaggedNoticeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+  },
+  flaggedNoticeEmoji: {
+    fontSize: 20,
+  },
+  flaggedNoticeTitle: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: '#FF3B30',
+  },
+  flaggedNoticeSubtitle: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  flaggedNoticeArrow: {
+    fontSize: typography.sizes.md,
+    color: '#FF3B30',
+    fontWeight: typography.weights.bold,
   },
 });

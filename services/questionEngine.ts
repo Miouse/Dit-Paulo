@@ -4,6 +4,7 @@
 import { questions } from '../data/questions';
 import type { GameMode, IntensityLevel, QuestionCategory } from '../types/game';
 import type { Question } from '../types/question';
+import { flaggedQuestionsService } from './flaggedQuestionsService';
 import { tinderSortService } from './tinderSortService';
 
 export interface QuestionEngineFilter {
@@ -84,6 +85,17 @@ export const questionEngine = {
   },
 
   /**
+   * Applique les éventuelles modifications de texte enregistrées localement
+   */
+  getEffectiveQuestion(q: Question): Question {
+    const overridden = flaggedQuestionsService.getOverriddenText(q.id);
+    if (overridden) {
+      return { ...q, text: overridden };
+    }
+    return q;
+  },
+
+  /**
    * Sélectionne la prochaine question avec alternance intelligente des catégories
    */
   getNextQuestion(filter: QuestionEngineFilter): Question | null {
@@ -100,26 +112,30 @@ export const questionEngine = {
         const matchCat = categorySet ? categorySet.has(q.category) : true;
         return matchCat && !seenSet.has(q.id) && !excludedSet.has(q.id);
       });
-      return fallback.length > 0 ? fallback[Math.floor(Math.random() * fallback.length)] : null;
+      return fallback.length > 0 ? this.getEffectiveQuestion(fallback[Math.floor(Math.random() * fallback.length)]) : null;
     }
 
     // Tenter d'abord de trouver des questions d'une catégorie différente de la précédente pour varier le rythme
     if (filter.lastCategory && filter.categories && filter.categories.length > 1) {
       const differentCategoryQuestions = eligible.filter((q) => q.category !== filter.lastCategory);
       if (differentCategoryQuestions.length > 0) {
-        return differentCategoryQuestions[Math.floor(Math.random() * differentCategoryQuestions.length)];
+        return this.getEffectiveQuestion(
+          differentCategoryQuestions[Math.floor(Math.random() * differentCategoryQuestions.length)]
+        );
       }
     }
 
     // Sinon, piocher n'importe quelle question éligible
-    return eligible[Math.floor(Math.random() * eligible.length)];
+    return this.getEffectiveQuestion(eligible[Math.floor(Math.random() * eligible.length)]);
   },
 
   /**
    * Récupère une question par son ID
    */
   getQuestionById(id: string): Question | undefined {
-    return questions.find((q) => q.id === id);
+    const q = questions.find((item) => item.id === id);
+    if (!q) return undefined;
+    return this.getEffectiveQuestion(q);
   },
 
   /**

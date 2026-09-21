@@ -2,7 +2,7 @@
 // Galerie complète des cartes du jeu en grille responsive par Catégorie
 
 import { router } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   ScrollView,
@@ -16,6 +16,7 @@ import {
 import { ScreenContainer } from '../components/ScreenContainer';
 import { colors, radii, shadows, spacing, typography } from '../constants/theme';
 import { questions } from '../data/questions';
+import { flaggedQuestionsService } from '../services/flaggedQuestionsService';
 import { CATEGORY_CONFIGS, type QuestionCategory } from '../types/game';
 import type { Question } from '../types/question';
 
@@ -33,6 +34,17 @@ export default function CardsGalleryScreen() {
   // Filtres
   const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | 'all' | 'custom'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [flaggedIds, setFlaggedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    flaggedQuestionsService.getFlaggedQuestions().then((list) => {
+      setFlaggedIds(list.map((item) => item.id));
+    });
+    const unsub = flaggedQuestionsService.subscribe((list) => {
+      setFlaggedIds(list.map((item) => item.id));
+    });
+    return () => unsub();
+  }, []);
 
   const allCategories = Object.keys(CATEGORY_CONFIGS) as QuestionCategory[];
   const customCardsCount = useMemo(() => questions.filter((q) => q.isCustom).length, []);
@@ -61,6 +73,8 @@ export default function CardsGalleryScreen() {
   const renderCardItem = ({ item }: { item: Question }) => {
     const catConfig = CATEGORY_CONFIGS[item.category] || CATEGORY_CONFIGS.fun;
 
+    const isFlagged = flaggedIds.includes(item.id);
+
     return (
       <View style={[styles.cardContainer, { width: `${100 / numColumns}%` as any }]}>
         <View style={[styles.miniCard, { borderColor: item.isCustom ? '#FFD700' : catConfig.color }]}>
@@ -80,7 +94,16 @@ export default function CardsGalleryScreen() {
                 <Text style={[styles.categoryBadgeText, { color: '#FFD700' }]}>⭐ Perso</Text>
               </View>
             )}
-            <Text style={styles.idBadge}>#{item.id}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <TouchableOpacity
+                onPress={() => flaggedQuestionsService.toggleFlag(item)}
+                style={[styles.galleryFlagBtn, isFlagged && styles.galleryFlagBtnActive]}
+                accessibilityLabel={isFlagged ? "Retirer le drapeau" : "Signaler pour modification"}
+              >
+                <Text style={{ fontSize: 10 }}>{isFlagged ? '🚩' : '🏳️'}</Text>
+              </TouchableOpacity>
+              <Text style={styles.idBadge}>#{item.id}</Text>
+            </View>
           </View>
 
           {/* Corps de la question */}
@@ -123,6 +146,16 @@ export default function CardsGalleryScreen() {
               </TouchableOpacity>
 
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                {flaggedIds.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => router.push('/flagged-questions')}
+                    style={[styles.backButton, { backgroundColor: 'rgba(255, 59, 48, 0.15)', borderColor: '#FF3B30' }]}
+                    accessibilityLabel="Voir les questions à modifier"
+                  >
+                    <Text style={[styles.backText, { color: '#FF3B30' }]}>🚩 {flaggedIds.length}</Text>
+                  </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
                   onPress={() => router.push('/custom-cards')}
                   style={[styles.backButton, { backgroundColor: 'rgba(255, 215, 0, 0.15)', borderColor: '#FFD700' }]}
@@ -391,5 +424,17 @@ const styles = StyleSheet.create({
   playersBadge: {
     fontSize: 10,
     color: colors.textTertiary,
+  },
+  galleryFlagBtn: {
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: radii.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  galleryFlagBtnActive: {
+    backgroundColor: 'rgba(255, 59, 48, 0.25)',
+    borderColor: '#FF3B30',
   },
 });

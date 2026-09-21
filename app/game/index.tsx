@@ -12,6 +12,7 @@ import { colors, radii, spacing, typography } from '../../constants/theme';
 import { useGame } from '../../context/GameContext';
 import type { Gage } from '../../data/gages';
 import { favoritesService } from '../../services/favoritesService';
+import { flaggedQuestionsService } from '../../services/flaggedQuestionsService';
 import { gagesService } from '../../services/gagesService';
 import { jokeEngine, type JokeEffect } from '../../services/jokeEngine';
 import { questionEngine } from '../../services/questionEngine';
@@ -42,6 +43,7 @@ export default function GameScreen() {
   } = useGame();
 
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isFlagged, setIsFlagged] = useState(false);
   const [activeJoke, setActiveJoke] = useState<JokeEffect | null>(null);
   const [showPodium, setShowPodium] = useState(false);
   const [playedHistory, setPlayedHistory] = useState<PlayedCardHistoryItem[]>([]);
@@ -144,6 +146,20 @@ export default function GameScreen() {
       setIsFavorite(fav);
     }
     checkFav();
+
+    // Vérifier l'état signalé (drapeau 🚩)
+    if (state.currentQuestionId) {
+      setIsFlagged(flaggedQuestionsService.isFlagged(state.currentQuestionId));
+    } else {
+      setIsFlagged(false);
+    }
+    const unsubFlagged = flaggedQuestionsService.subscribe(() => {
+      if (state.currentQuestionId) {
+        setIsFlagged(flaggedQuestionsService.isFlagged(state.currentQuestionId));
+      }
+    });
+
+    return () => unsubFlagged();
   }, [state.currentQuestionId]);
 
   // Basculer l'état favori
@@ -151,6 +167,13 @@ export default function GameScreen() {
     if (!state.currentQuestionId) return;
     const newStatus = await favoritesService.toggleFavorite(state.currentQuestionId);
     setIsFavorite(newStatus);
+  };
+
+  // Basculer le signalement pour modification
+  const handleToggleFlag = async () => {
+    if (!currentQuestion) return;
+    const newFlagged = await flaggedQuestionsService.toggleFlag(currentQuestion);
+    setIsFlagged(newFlagged);
   };
 
   // Piocher la question suivante (avec ou sans rotation de joueur)
@@ -406,6 +429,26 @@ export default function GameScreen() {
             >
               <Text style={[styles.actionChipText, !isDesktop && styles.actionChipTextMobile]}>
                 {isFavorite ? '❤️ Coup de cœur' : '🤍 Favori'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleToggleFlag}
+              style={[
+                styles.actionChip,
+                !isDesktop && styles.actionChipMobile,
+                isFlagged && styles.flaggedActiveChip,
+              ]}
+              accessibilityLabel={isFlagged ? 'Retirer le drapeau de modification' : 'Signaler cette question à modifier'}
+            >
+              <Text
+                style={[
+                  styles.actionChipText,
+                  !isDesktop && styles.actionChipTextMobile,
+                  isFlagged && styles.flaggedActiveChipText,
+                ]}
+              >
+                {isFlagged ? '🚩 Signalée' : '🏳️ À modifier'}
               </Text>
             </TouchableOpacity>
 
@@ -979,6 +1022,14 @@ const styles = StyleSheet.create({
   favoriteActive: {
     backgroundColor: colors.favoriteMuted,
     borderColor: colors.favorite,
+  },
+  flaggedActiveChip: {
+    backgroundColor: 'rgba(255, 59, 48, 0.22)',
+    borderColor: '#FF3B30',
+  },
+  flaggedActiveChipText: {
+    color: '#FF453A',
+    fontWeight: typography.weights.bold,
   },
   jokerActive: {
     backgroundColor: 'rgba(255, 214, 10, 0.18)',

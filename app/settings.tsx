@@ -18,6 +18,7 @@ import { useGame } from '../context/GameContext';
 import { useTheme } from '../context/ThemeContext';
 import { questions } from '../data/questions';
 import { customCardsService } from '../services/customCardsService';
+import { flaggedQuestionsService } from '../services/flaggedQuestionsService';
 import { jokeEngine, type JokeEffect } from '../services/jokeEngine';
 import { tinderSortService } from '../services/tinderSortService';
 
@@ -26,6 +27,7 @@ export default function SettingsScreen() {
   const { state, resetSession, resetSeenQuestions } = useGame();
   const [resetFeedback, setResetFeedback] = useState(false);
   const [customCardsCount, setCustomCardsCount] = useState(0);
+  const [flaggedCount, setFlaggedCount] = useState(0);
 
   const [jokesEnabled, setJokesEnabled] = useState(true);
   const [jokesList, setJokesList] = useState<JokeEffect[]>([]);
@@ -49,9 +51,14 @@ export default function SettingsScreen() {
     });
     customCardsService.getCustomCards().then((c) => setCustomCardsCount(c.length));
     const unsubCards = customCardsService.subscribe((c) => setCustomCardsCount(c.length));
+
+    flaggedQuestionsService.getFlaggedQuestions().then((list) => setFlaggedCount(list.length));
+    const unsubFlagged = flaggedQuestionsService.subscribe((list) => setFlaggedCount(list.length));
+
     return () => {
       unsubTinder();
       unsubCards();
+      unsubFlagged();
     };
   }, []);
 
@@ -192,6 +199,43 @@ export default function SettingsScreen() {
             >
               <Text style={[styles.primaryActionText, { color: theme.colors.accentLight }]}>
                 ✨ Gérer & Créer mes Cartes Personnalisées
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Section Questions Signalées à modifier */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>QUESTIONS SIGNALÉES (À MODIFIER) 🚩</Text>
+            <View style={styles.card}>
+              <View style={styles.rowBetween}>
+                <View style={styles.rowLabelGroup}>
+                  <Text style={styles.labelBold}>Questions marquées avec le drapeau</Text>
+                  <Text style={styles.sublabel}>
+                    {flaggedCount > 0
+                      ? `${flaggedCount} question${flaggedCount > 1 ? 's' : ''} signalée${flaggedCount > 1 ? 's' : ''} à relire ou modifier`
+                      : 'Aucune question signalée pendant les parties'}
+                  </Text>
+                </View>
+                <View style={[styles.activeThemeBadge, { borderColor: '#FF3B30', backgroundColor: 'rgba(255, 59, 48, 0.15)' }]}>
+                  <Text style={[styles.activeThemeBadgeText, { color: '#FF3B30' }]}>
+                    🚩 {flaggedCount}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => router.push('/flagged-questions')}
+              style={[
+                styles.primaryActionCard,
+                {
+                  borderColor: 'rgba(255, 59, 48, 0.4)',
+                  backgroundColor: 'rgba(255, 59, 48, 0.08)',
+                },
+              ]}
+            >
+              <Text style={[styles.primaryActionText, { color: '#FF3B30' }]}>
+                🚩 Modifier & Exporter les Questions Signalées ({flaggedCount})
               </Text>
             </TouchableOpacity>
           </View>

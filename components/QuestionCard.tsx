@@ -5,6 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Share, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { colors, radii, shadows, spacing, typography } from '../constants/theme';
+import { flaggedQuestionsService } from '../services/flaggedQuestionsService';
 import { questionEngine } from '../services/questionEngine';
 import { CATEGORY_CONFIGS } from '../types/game';
 import type { Question } from '../types/question';
@@ -43,6 +44,25 @@ export function QuestionCard({
   // Contenu affiché lors du retournement
   const [displayedQuestion, setDisplayedQuestion] = useState<Question>(question);
   const [displayedPlayer, setDisplayedPlayer] = useState<string | undefined>(currentPlayerName);
+  const [isFlagged, setIsFlagged] = useState(() => flaggedQuestionsService.isFlagged(question.id));
+  const [flagToast, setFlagToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsFlagged(flaggedQuestionsService.isFlagged(displayedQuestion.id));
+    const unsub = flaggedQuestionsService.subscribe(() => {
+      setIsFlagged(flaggedQuestionsService.isFlagged(displayedQuestion.id));
+    });
+    return () => unsub();
+  }, [displayedQuestion.id]);
+
+  const handleToggleFlag = async () => {
+    const flagged = await flaggedQuestionsService.toggleFlag(displayedQuestion);
+    setIsFlagged(flagged);
+    setFlagToast(flagged ? 'Signalée à modifier 🚩' : 'Signalement retiré 🏳️');
+    setTimeout(() => {
+      setFlagToast(null);
+    }, 2200);
+  };
 
   const isFirstRender = useRef(true);
 
@@ -182,18 +202,34 @@ export function QuestionCard({
 
             <View style={styles.headerRightActions}>
               <TouchableOpacity
-                style={styles.shareButton}
+                style={[styles.headerActionButton, isFlagged && styles.flaggedActiveButton]}
+                onPress={handleToggleFlag}
+                activeOpacity={0.7}
+                accessibilityLabel={isFlagged ? "Retirer le signalement (question à modifier)" : "Signaler cette question à modifier"}
+              >
+                <Text style={styles.actionIconText}>{isFlagged ? '🚩' : '🏳️'}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.headerActionButton}
                 onPress={handleShare}
                 activeOpacity={0.7}
                 accessibilityLabel="Partager cette question"
               >
-                <Text style={styles.shareIconText}>📤</Text>
+                <Text style={styles.actionIconText}>📤</Text>
               </TouchableOpacity>
               <View style={styles.idBadge}>
                 <Text style={styles.idBadgeText}>#{displayedQuestion.id}</Text>
               </View>
             </View>
           </View>
+
+          {/* Toast informatif lors du clic sur le drapeau */}
+          {flagToast && (
+            <View style={styles.flagToastBanner}>
+              <Text style={styles.flagToastText}>{flagToast}</Text>
+            </View>
+          )}
 
           {/* Corps de la carte : Question centrale */}
           <View style={styles.contentContainer}>
@@ -319,7 +355,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  shareButton: {
+  headerActionButton: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radii.full,
@@ -329,8 +365,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  shareIconText: {
+  flaggedActiveButton: {
+    backgroundColor: 'rgba(255, 59, 48, 0.22)',
+    borderColor: '#FF3B30',
+  },
+  actionIconText: {
     fontSize: 11,
+  },
+  flagToastBanner: {
+    position: 'absolute',
+    top: 50,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(30, 30, 40, 0.94)',
+    borderWidth: 1,
+    borderColor: '#FF3B30',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: radii.full,
+    zIndex: 99,
+  },
+  flagToastText: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
   },
   idBadge: {
     paddingHorizontal: 8,
