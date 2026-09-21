@@ -2842,7 +2842,7 @@ export const questions: Question[] = [
   },
   {
     id: 'sit_021',
-    text: "Situation : Quelqu'un sait qu'il/elle te plaît et insiste pour que tu viennes avec lui/elle en boîte. Tu acceptes, puis pendant la soirée cette personne embrasse quelqu'un d'autre devant toi. Tu réagis comment ?",
+    text: "Quelqu'un sait qu'il/elle te plaît et insiste pour que tu viennes avec lui/elle en boîte. Tu acceptes, puis pendant la soirée cette personne embrasse quelqu'un d'autre devant toi. Tu réagis comment ?",
     modes: ['nofilter', 'date', 'party'],
     category: 'situationship',
     minPlayers: 2,
